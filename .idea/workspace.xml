@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a2a9afe5-5333-401d-a585-026dfc4c95eb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.devcontainer/devcontainer.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.editorconfig" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.history/Makefile_20210104103230" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.history/Makefile_20210104110139" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.history/Makefile_20210104112357" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.history/Makefile_20210104112358" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/node.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.vscode/tasks.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node/Cargo.toml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node/build.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node/src/chain_spec.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node/src/cli.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node/src/command.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node/src/lib.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node/src/main.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node/src/rpc.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/node/src/service.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pallets/simple/Cargo.toml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pallets/simple/src/lib.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pallets/simple/src/mock.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pallets/simple/src/tests.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pallets/template/Cargo.toml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pallets/template/src/lib.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pallets/template/src/mock.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pallets/template/src/tests.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/runtime/Cargo.toml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/runtime/build.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/runtime/src/lib.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/docker_run.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/init.sh" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="bgiaftyc" />
+  </component>
+  <component name="ProjectId" id="1mb9DOVfSVDFFBz9Cs1uKCD6qjq" />
+  <component name="ProjectViewState">
+    <option name="autoscrollFromSource" value="true" />
+    <option name="autoscrollToSource" value="true" />
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/pallets" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
+    <property name="org.rust.hideNoCargoProjectNotifications/Users/mikhail/Coding/substrate1/node/runtime/Cargo.toml" value="true" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/pallets" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
+      <option name="arquillianRunConfiguration">
+        <value>
+          <option name="containerStateName" value="" />
+        </value>
+      </option>
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a2a9afe5-5333-401d-a585-026dfc4c95eb" name="Default Changelist" comment="" />
+      <created>1609751304300</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1609751304300</updated>
+      <workItem from="1609751307393" duration="17741000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
