@@ -13,6 +13,7 @@ use frame_system::{
 		SignedPayload, SigningTypes, Signer, SubmitTransaction,
 	},
 };
+use core::{convert::TryInto, fmt};
 use sp_core::crypto::KeyTypeId;
 use sp_runtime::{
 	RuntimeDebug,
@@ -197,6 +198,8 @@ decl_module! {
         // Offchain worker runs after each block
 		fn offchain_worker(block_number: T::BlockNumber) {
 			debug::info!("Entering off-chain worker");
+			// debug::info!("{}", block_number.to_string());
+			Self::offchain_signed_tx(block_number);
 			}
 
     }
@@ -211,7 +214,7 @@ impl<T: Trait> Module<T> {
 		let signer = Signer::<T, T::AuthorityId>::any_account();
 
 		// Translating the current block number to number and submit it on-chain
-		let number: u64 = 23; //block_number.try_into().unwrap_or(0) as u64;
+		let number: u64 = block_number.try_into().unwrap_or(0) as u64;
 
 		// `result` is in the type of `Option<(Account<T>, Result<(), ()>)>`. It is:
 		//   - `None`: no account is available for sending transaction
