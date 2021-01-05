@@ -15,9 +15,10 @@ pub use frame_support::{
 pub use pallet_balances::Call as BalancesCall;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use pallet_grandpa::fg_primitives;
+
+/// Import the polkaswap pallet.
 pub use pallet_polkaswap;
-/// Import the template pallet.
-pub use pallet_template;
+
 pub use pallet_timestamp::Call as TimestampCall;
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -27,6 +28,7 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 };
 pub use sp_runtime::{Perbill, Permill};
+
 
 // A few exports that help ease life for downstream crates.
 #[cfg(any(feature = "std", test))]
@@ -131,6 +133,7 @@ parameter_types! {
 		.saturating_sub(Perbill::from_percent(10)) * MaximumBlockWeight::get();
 	pub const MaximumBlockLength: u32 = 5 * 1024 * 1024;
 	pub const Version: RuntimeVersion = VERSION;
+
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -263,24 +266,22 @@ impl pallet_sudo::Trait for Runtime {
 	type Call = Call;
 }
 
-/// Configure the template pallet in pallets/template.
-impl pallet_template::Trait for Runtime {
-	type Event = Event;
-
-}
-
-
-///
-///
+//
+//
 /// =====> POLKA-SWAP CONFIGURATION <========
-///
-///
+//
+//
+
+parameter_types! {
+	pub const EthProviderEndpoint : &'static str = env!("WEB3PROVIDER");
+}
 pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 
 impl pallet_polkaswap::Trait for Runtime {
 	type AuthorityId = pallet_polkaswap::crypto::TestAuthId;
 	type Call = Call;
 	type Event = Event;
+	type EthProviderEndpoint = EthProviderEndpoint;
 }
 
 
@@ -341,7 +342,7 @@ impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
 }
 
 
-/// =====> END OF POLKA-SWAP CONFIGURATION <========
+// =====> END OF POLKA-SWAP CONFIGURATION <========
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -360,7 +361,6 @@ construct_runtime!(
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
 
 		// Include the custom logic from the template pallet in the runtime.
-		TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
 		PolkaSwap: pallet_polkaswap::{Module, Call, Storage, Event<T>},
 	}
 );

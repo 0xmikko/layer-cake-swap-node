@@ -25,9 +25,6 @@ hex-literal = { optional = true, version = '0.3.1' }
 serde = { features = ['derive'], optional = true, version = '1.0.101' }
 
 # local dependencies
-pallet-template = { path = '../pallets/template', default-features = false, version = '2.0.0' }
-
-## SIMPLE ADDED HERE
 pallet-polkaswap = { path = '../pallets/polkaswap', default-features = false, version = '2.0.0' }
 
 
@@ -83,7 +80,6 @@ std = [
     'pallet-grandpa/std',
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
-    'pallet-template/std',
     'pallet-polkaswap/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',

@@ -13,7 +13,7 @@ use frame_system::{
 		SignedPayload, SigningTypes, Signer, SubmitTransaction,
 	},
 };
-use core::{convert::TryInto, fmt};
+use core::{convert::*, fmt};
 use sp_core::crypto::KeyTypeId;
 use sp_runtime::{
 	RuntimeDebug,
@@ -31,6 +31,9 @@ use sp_std::{
 	prelude::*, str,
 	collections::vec_deque::VecDeque,
 };
+use sp_runtime::offchain::http::Request;
+use sp_runtime::offchain::http::Method::Post;
+use codec::{Decode, Encode};
 // use ethereum::{Bytes, Event, EventParam, Hash, Log, ParamType, RawLog};
 
 #[cfg(test)]
@@ -38,6 +41,8 @@ mod mock;
 
 #[cfg(test)]
 mod tests;
+mod ethjsonrpc;
+mod serde_helpers;
 
 /// Defines application identifier for crypto keys of this module.
 ///
@@ -51,12 +56,10 @@ pub const NUM_VEC_LEN: usize = 10;
 /// The type to sign and send transactions.
 pub const UNSIGNED_TXS_PRIORITY: u64 = 100;
 
-// We are fetching information from the github public API about organization`substrate-developer-hub`.
-pub const HTTP_REMOTE_REQUEST: &str = "https://api.github.com/orgs/substrate-developer-hub";
-pub const HTTP_HEADER_USER_AGENT: &str = "jimmychu0807";
-
-pub const FETCH_TIMEOUT_PERIOD: u64 = 3000; // in milli-seconds
-pub const LOCK_TIMEOUT_EXPIRATION: u64 = FETCH_TIMEOUT_PERIOD + 1000; // in milli-seconds
+pub const FETCH_TIMEOUT_PERIOD: u64 = 3000;
+// in milli-seconds
+pub const LOCK_TIMEOUT_EXPIRATION: u64 = FETCH_TIMEOUT_PERIOD + 1000;
+// in milli-seconds
 pub const LOCK_BLOCK_EXPIRATION: u32 = 3; // in block number
 
 /// Based on the above `KeyTypeId` we need to generate a pallet-specific crypto type wrapper.
@@ -74,6 +77,7 @@ pub mod crypto {
 	app_crypto!(sr25519, KEY_TYPE);
 
 	pub struct TestAuthId;
+
 	// implemented for ocw-runtime
 	impl frame_system::offchain::AppCrypto<MultiSigner, MultiSignature> for TestAuthId {
 		type RuntimeAppPublic = Public;
@@ -92,8 +96,6 @@ pub mod crypto {
 }
 
 
-
-
 /// This is the pallet's configuration trait
 pub trait Trait: system::Trait + CreateSignedTransaction<Call<Self>> {
 	/// The identifier type for an offchain worker.
@@ -102,15 +104,9 @@ pub trait Trait: system::Trait + CreateSignedTransaction<Call<Self>> {
 	type Call: From<Call<Self>>;
 	/// The overarching event type.
 	type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
+
+	type EthProviderEndpoint: Get<&'static str>;
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -172,6 +168,7 @@ decl_module! {
 	 pub struct Module<T: Trait> for enum Call where origin: T::Origin {
         // A default function for depositing events in our runtime
         fn deposit_event() = default;
+        // const ethProviderEndpoint: &'static str = T::EthProviderEndpoint::get();
 
      	/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
@@ -198,12 +195,15 @@ decl_module! {
         // Offchain worker runs after each block
 		fn offchain_worker(block_number: T::BlockNumber) {
 			debug::info!("Entering off-chain worker");
-			// debug::info!("{}", block_number.to_string());
+			debug::info!("{}", T::EthProviderEndpoint::get());
 			Self::offchain_signed_tx(block_number);
 			}
 
     }
 }
+
+
+
 
 impl<T: Trait> Module<T> {
 	fn offchain_signed_tx(block_number: T::BlockNumber) -> Result<(), Error<T>> {
@@ -214,7 +214,8 @@ impl<T: Trait> Module<T> {
 		let signer = Signer::<T, T::AuthorityId>::any_account();
 
 		// Translating the current block number to number and submit it on-chain
-		let number: u64 = block_number.try_into().unwrap_or(0) as u64;
+		// let number: u64 = block_number.try_into().unwrap_or(0) as u64;
+		let number: u64 = Self::get_last_eth_block()? as u64;
 
 		// `result` is in the type of `Option<(Account<T>, Result<(), ()>)>`. It is:
 		//   - `None`: no account is available for sending transaction
