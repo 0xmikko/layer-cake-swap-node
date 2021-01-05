@@ -9,27 +9,29 @@ pub use frame_support::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND}, IdentityFee,
 		Weight,
 	},
+	debug,
 };
 pub use pallet_balances::Call as BalancesCall;
 use pallet_grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use pallet_grandpa::fg_primitives;
-pub use pallet_simple;
+pub use pallet_polkaswap;
 /// Import the template pallet.
 pub use pallet_template;
 pub use pallet_timestamp::Call as TimestampCall;
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{Encode, crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	ApplyExtrinsicResult, create_runtime_str, generic, impl_opaque_keys, MultiSignature,
 	transaction_validity::{TransactionSource, TransactionValidity},
 };
 pub use sp_runtime::{Perbill, Permill};
+
 // A few exports that help ease life for downstream crates.
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::traits::{
-	BlakeTwo256, Block as BlockT, IdentifyAccount, IdentityLookup, NumberFor, Saturating, Verify,
+	BlakeTwo256, Block as BlockT, IdentifyAccount, IdentityLookup, NumberFor, SaturatedConversion, Saturating, Verify,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -155,21 +157,21 @@ impl frame_system::Trait for Runtime {
 	type Event = Event;
 	/// The ubiquitous origin type.
 	type Origin = Origin;
-	/// Maximum number of block number to block hash mappings to keep (oldest pruned first).
+	/// Maximum number of block numbers to block hash maps to keep with the oldest pruned first.
 	type BlockHashCount = BlockHashCount;
-	/// Maximum weight of each block.
+	/// Maximum weight of each block. With a default weight system of 1byte == 1weight, 4mb is ok.
 	type MaximumBlockWeight = MaximumBlockWeight;
-	/// The weight of database operations that the runtime can invoke.
+	/// The weight of the database operations that the runtime can invoke.
 	type DbWeight = RocksDbWeight;
-	/// The weight of the overhead invoked on the block import process, independent of the
+	/// The weight of the overhead invoked on the block import process. This is independent of the
 	/// extrinsics included in that block.
 	type BlockExecutionWeight = BlockExecutionWeight;
 	/// The base weight of any extrinsic processed by the runtime, independent of the
 	/// logic of that extrinsic. (Signature verification, nonce increment, fee, etc...)
 	type ExtrinsicBaseWeight = ExtrinsicBaseWeight;
 	/// The maximum weight that a single extrinsic of `Normal` dispatch class can have,
-	/// idependent of the logic of that extrinsics. (Roughly max block weight - average on
-	/// initialize cost).
+	/// is dependent of the logic of that extrinsic. (Roughly max block weight - average
+	/// on_initialize cost).
 	type MaximumExtrinsicWeight = MaximumExtrinsicWeight;
 	/// Maximum size of all encoded transactions (in bytes) that are allowed in one block.
 	type MaximumBlockLength = MaximumBlockLength;
@@ -267,21 +269,78 @@ impl pallet_template::Trait for Runtime {
 }
 
 
-///  MY PALLET!!!
 ///
 ///
+/// =====> POLKA-SWAP CONFIGURATION <========
 ///
 ///
-///
-///
-// Define the transaction signer using the key definition
-// type SubmitTransaction = frame_system::offchain::SubmitTransaction<
-// 	pallet_simple::crypto::Public, Runtime>;
+pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 
-impl pallet_simple::Trait for Runtime {
+impl pallet_polkaswap::Trait for Runtime {
+	type AuthorityId = pallet_polkaswap::crypto::TestAuthId;
+	type Call = Call;
 	type Event = Event;
 }
 
+
+impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
+	where
+		Call: From<LocalCall>,
+{
+	fn create_transaction<C: frame_system::offchain::AppCrypto<Self::Public, Self::Signature>>(
+		call: Call,
+		public: <Signature as sp_runtime::traits::Verify>::Signer,
+		account: AccountId,
+		index: Index,
+	) -> Option<(
+		Call,
+		<UncheckedExtrinsic as sp_runtime::traits::Extrinsic>::SignaturePayload,
+	)> {
+		let period = BlockHashCount::get() as u64;
+		let current_block = System::block_number()
+			.saturated_into::<u64>()
+			.saturating_sub(1);
+		let tip = 0;
+		let extra: SignedExtra = (
+			frame_system::CheckSpecVersion::<Runtime>::new(),
+			frame_system::CheckTxVersion::<Runtime>::new(),
+			frame_system::CheckGenesis::<Runtime>::new(),
+			frame_system::CheckEra::<Runtime>::from(generic::Era::mortal(period, current_block)),
+			frame_system::CheckNonce::<Runtime>::from(index),
+			frame_system::CheckWeight::<Runtime>::new(),
+			pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
+		);
+
+		#[cfg_attr(not(feature = "std"), allow(unused_variables))]
+			let raw_payload = SignedPayload::new(call, extra)
+			.map_err(|e| {
+				debug::native::warn!("SignedPayload error: {:?}", e);
+			})
+			.ok()?;
+
+		let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;
+
+		let address = account;
+		let (call, extra, _) = raw_payload.deconstruct();
+		Some((call, (address, signature, extra)))
+	}
+}
+
+impl frame_system::offchain::SigningTypes for Runtime {
+	type Public = <Signature as sp_runtime::traits::Verify>::Signer;
+	type Signature = Signature;
+}
+
+impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
+	where
+		Call: From<C>,
+{
+	type OverarchingCall = Call;
+	type Extrinsic = UncheckedExtrinsic;
+}
+
+
+/// =====> END OF POLKA-SWAP CONFIGURATION <========
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -301,7 +360,7 @@ construct_runtime!(
 
 		// Include the custom logic from the template pallet in the runtime.
 		TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
-		SimpleModule: pallet_simple::{Module, Call, Storage, Event<T>},
+		PolkaSwap: pallet_polkaswap::{Module, Call, Storage, Event<T>},
 	}
 );
 

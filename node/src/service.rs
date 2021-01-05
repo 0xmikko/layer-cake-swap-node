@@ -3,7 +3,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 use sc_client_api::{ExecutorProvider, RemoteBackend};
-use node_template_runtime::{self, opaque::Block, RuntimeApi};
+use node_template_runtime::{self as runtime, opaque::Block, RuntimeApi};
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager};
 use sp_inherents::InherentDataProviders;
 use sc_executor::native_executor_instance;
@@ -42,6 +42,13 @@ pub fn new_partial(config: &Configuration) -> Result<sc_service::PartialComponen
 	let (client, backend, keystore, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config)?;
 	let client = Arc::new(client);
+
+	// Adding Alice for offchain
+
+	keystore.write().insert_ephemeral_from_seed_by_type::<runtime::pallet_polkaswap::crypto::Pair>(
+		"//Alice", runtime::pallet_polkaswap::KEY_TYPE
+	).expect("Creating key with account Alice should succeed.");
+
 
 	let select_chain = sc_consensus::LongestChain::new(backend.clone());
 

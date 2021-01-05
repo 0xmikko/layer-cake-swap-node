@@ -8,46 +8,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a2a9afe5-5333-401d-a585-026dfc4c95eb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.devcontainer/devcontainer.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.editorconfig" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.history/Makefile_20210104103230" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.history/Makefile_20210104110139" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.history/Makefile_20210104112357" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.history/Makefile_20210104112358" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/node.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.vscode/tasks.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/node/Cargo.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/node/build.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/node/src/chain_spec.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/node/src/cli.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/node/src/command.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/node/src/lib.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/node/src/main.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/node/src/rpc.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/node/src/service.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pallets/simple/Cargo.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pallets/simple/src/lib.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pallets/simple/src/mock.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pallets/simple/src/tests.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pallets/template/Cargo.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pallets/template/src/lib.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pallets/template/src/mock.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pallets/template/src/tests.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runtime/Cargo.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runtime/build.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/runtime/src/lib.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/docker_run.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/init.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/node/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/node/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/node/src/service.rs" beforeDir="false" afterPath="$PROJECT_DIR$/node/src/service.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pallets/simple/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/polkaswap/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pallets/simple/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/polkaswap/src/lib.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pallets/simple/src/mock.rs" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/polkaswap/src/mock.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pallets/simple/src/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/polkaswap/src/tests.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runtime/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/runtime/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runtime/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/runtime/src/lib.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,11 +79,23 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1609751304300</updated>
-      <workItem from="1609751307393" duration="17741000" />
+      <workItem from="1609751307393" duration="26403000" />
     </task>
+    <task id="LOCAL-00001" summary="First commit">
+      <created>1609799237026</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1609799237026</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="First commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="First commit" />
   </component>
 </project>

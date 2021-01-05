@@ -4,7 +4,7 @@ description = 'FRAME pallet template for defining custom runtime logic.'
 edition = '2018'
 homepage = 'https://substrate.dev'
 license = 'Unlicense'
-name = 'pallet-simple'
+name = 'pallet-polkaswap'
 repository = 'https://github.com/substrate-developer-hub/substrate-node-template/'
 version = '2.0.0'
 
@@ -27,13 +27,12 @@ sp-io = { version = "2.0.0", default-features = false }
 sp-runtime = { version = "2.0.0", default-features = false}
 sp-std = { version = "2.0.0", default-features = false }
 lite-json = { version = "0.1", default-features = false }
+ethereum = { version = "0.5.1", default-features = false }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = '2.0.0' }
 sp-io = { default-features = false, version = '2.0.0' }
 sp-runtime = { default-features = false, version = '2.0.0' }
-
-
 
 [features]
 default = ['std']
@@ -42,6 +41,7 @@ std = [
     'frame-support/std',
     'frame-system/std',
     "serde",
+    "ethereum/std",
     "lite-json/std",
     "sp-core/std",
     "sp-io/std",

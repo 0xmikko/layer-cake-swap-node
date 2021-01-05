@@ -28,7 +28,7 @@ serde = { features = ['derive'], optional = true, version = '1.0.101' }
 pallet-template = { path = '../pallets/template', default-features = false, version = '2.0.0' }
 
 ## SIMPLE ADDED HERE
-pallet-simple = { path = '../pallets/simple', default-features = false, version = '2.0.0' }
+pallet-polkaswap = { path = '../pallets/polkaswap', default-features = false, version = '2.0.0' }
 
 
 # Substrate dependencies
@@ -40,6 +40,7 @@ frame-system-benchmarking = { default-features = false, optional = true, version
 frame-system-rpc-runtime-api = { default-features = false, version = '2.0.0' }
 pallet-aura = { default-features = false, version = '2.0.0' }
 pallet-balances = { default-features = false, version = '2.0.0' }
+#pallet-evm = { default-features = false, version = '2.0.0' }
 pallet-grandpa = { default-features = false, version = '2.0.0' }
 pallet-randomness-collective-flip = { default-features = false, version = '2.0.0' }
 pallet-sudo = { default-features = false, version = '2.0.0' }
@@ -83,7 +84,7 @@ std = [
     'pallet-randomness-collective-flip/std',
     'pallet-sudo/std',
     'pallet-template/std',
-    'pallet-simple/std',
+    'pallet-polkaswap/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
