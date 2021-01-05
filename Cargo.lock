@@ -3677,6 +3677,7 @@ dependencies = [
  "ethereum-types 0.10.0",
  "frame-support",
  "frame-system",
+ "hex",
  "lite-json",
  "parity-scale-codec",
  "serde",

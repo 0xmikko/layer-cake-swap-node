@@ -5,7 +5,7 @@ use sp_runtime::{
 	offchain as rt_offchain,
 };
 use sp_std::prelude::*;
-use sp_std::str;
+use sp_std::{str};
 use core::{convert::*, fmt};
 
 // We use `alt_serde`, and Xanewok-modified `serde_json` so that we can compile the program
@@ -14,7 +14,6 @@ use alt_serde::{Serialize, Deserialize, Deserializer};
 use crate::serde_helpers::*;
 
 pub const FETCH_TIMEOUT_PERIOD: u64 = 30000;
-
 
 // Struct for making Ethereum JSON RPC requests
 #[serde(crate = "alt_serde")]
@@ -32,11 +31,24 @@ struct JSONRpcRequest<T> {
 pub(crate) struct EthBlockNumberResponse {
 	#[serde(deserialize_with = "de_string_to_bytes")]
 	jsonrpc: Vec<u8>,
+
 	id: u32,
+
 	#[serde(deserialize_with = "de_hex_to_u32")]
 	result: u32,
 }
 
+#[serde(crate = "alt_serde")]
+#[derive(Serialize, Deserialize)]
+struct EthGetLogsRequest {
+	// address: String,
+
+	#[serde(serialize_with = "ser_u32_to_hex")]
+	from_block: u32,
+
+	#[serde(serialize_with = "ser_u32_to_hex")]
+	to_block: u32,
+}
 
 
 
@@ -47,6 +59,10 @@ impl<T: Trait> Module<T> {
 	// Returns last block of Ethereum network
 	pub(crate) fn get_last_eth_block() -> Result<u32, Error<T>> {
 		let params: [(); 0] = [];
+
+
+		let pam = EthGetLogsRequest{from_block: 20, to_block: 20};
+		debug::info!("Ser:{}", serde_json::to_string(&pam).unwrap());
 
 		let resp_bytes = Self::make_rpc_request("eth_blockNumber", &params)
 			.map_err(|e| {
@@ -59,7 +75,6 @@ impl<T: Trait> Module<T> {
 			.map_err(|_| <Error<T>>::HttpFetchingError)?;
 
 		debug::info!("Eth last block response: {}", resp_str);
-
 		let response: EthBlockNumberResponse = serde_json::from_str(resp_str).unwrap();
 		Ok(response.result)
 	}

@@ -1,12 +1,23 @@
-use alt_serde::{Deserializer, Deserialize};
+use alt_serde::{Serialize, Serializer, Deserializer, Deserialize};
 use ethereum_types::{Address, U256};
-use sp_std::str::FromStr;
-// use sp_std::fmt::Error;
+use sp_std::str::{FromStr};
 use sp_std::prelude::*;
 use frame_support::{debug};
 use alt_serde::de::Error;
+use hex::encode;
+
+
+
 // SERDE HELPERS FOR CONVERTING STRINGS INTO DIFFERENT TYPES
 
+
+pub fn ser_u32_to_hex<S>(value: &u32, ser: S) -> Result<S::Ok, S::Error>
+	where S: Serializer {
+	let hexValue =  encode(value.to_be_bytes());
+	let result =  ["0x", hexValue.as_str()].concat();
+
+	ser.serialize_str(result.as_str())
+}
 
 // Convert string into bytes
 pub fn de_string_to_bytes<'de, D>(de: D) -> Result<Vec<u8>, D::Error>
@@ -31,9 +42,9 @@ pub fn de_hex_to_address<'de, D>(de: D) -> Result<Address, D::Error>
 	// Remove prefix 0x
 	let addr = Address::from_str(s)
 		.map_err(|e| {
-		debug::error!("cant make JSON RPC Call: {:?}", e);
+			debug::error!("cant make JSON RPC Call: {:?}", e);
 			<D as alt_serde::Deserializer<'de>>::Error::custom("rer")
-	})?;
+		})?;
 	Ok(addr)
 }
 
