@@ -12,6 +12,8 @@ use core::{convert::*, fmt};
 // with serde(features `std`) and alt_serde(features `no_std`).
 use alt_serde::{Serialize, Deserialize, Deserializer};
 use crate::serde_helpers::*;
+use ethereum_types::Address;
+use sp_std::str::FromStr;
 
 pub const FETCH_TIMEOUT_PERIOD: u64 = 30000;
 
@@ -39,9 +41,10 @@ pub(crate) struct EthBlockNumberResponse {
 }
 
 #[serde(crate = "alt_serde")]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize)]
 struct EthGetLogsRequest {
-	// address: String,
+	#[serde(serialize_with = "ser_address_to_hex")]
+	address: Address,
 
 	#[serde(serialize_with = "ser_u32_to_hex")]
 	from_block: u32,
@@ -61,7 +64,11 @@ impl<T: Trait> Module<T> {
 		let params: [(); 0] = [];
 
 
-		let pam = EthGetLogsRequest{from_block: 20, to_block: 20};
+		let pam = EthGetLogsRequest{
+			address: Address::from_str("6b175474e89094c44da98b954eedeac495271d0f").expect("Wrong address"),
+			from_block: 20,
+			to_block: 20
+		};
 		debug::info!("Ser:{}", serde_json::to_string(&pam).unwrap());
 
 		let resp_bytes = Self::make_rpc_request("eth_blockNumber", &params)

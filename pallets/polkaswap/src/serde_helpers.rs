@@ -4,7 +4,7 @@ use sp_std::str::{FromStr};
 use sp_std::prelude::*;
 use frame_support::{debug};
 use alt_serde::de::Error;
-use hex::encode;
+use hex::{encode, ToHex};
 
 
 
@@ -13,11 +13,18 @@ use hex::encode;
 
 pub fn ser_u32_to_hex<S>(value: &u32, ser: S) -> Result<S::Ok, S::Error>
 	where S: Serializer {
-	let hexValue =  encode(value.to_be_bytes());
-	let result =  ["0x", hexValue.as_str()].concat();
-
+	let hex_value =  encode(value.to_be_bytes());
+	let result =  ["0x", hex_value.as_str()].concat();
 	ser.serialize_str(result.as_str())
 }
+
+pub fn ser_address_to_hex<S>(value: &Address, ser: S) -> Result<S::Ok, S::Error>
+	where S: Serializer {
+	let hex_value =  encode(value.as_bytes());
+	let result =  ["0x", hex_value.as_str()].concat();
+	ser.serialize_str(result.as_str())
+}
+
 
 // Convert string into bytes
 pub fn de_string_to_bytes<'de, D>(de: D) -> Result<Vec<u8>, D::Error>
@@ -43,7 +50,7 @@ pub fn de_hex_to_address<'de, D>(de: D) -> Result<Address, D::Error>
 	let addr = Address::from_str(s)
 		.map_err(|e| {
 			debug::error!("cant make JSON RPC Call: {:?}", e);
-			<D as alt_serde::Deserializer<'de>>::Error::custom("rer")
+			<D as alt_serde::Deserializer<'de>>::Error::custom("Can deserialize address")
 		})?;
 	Ok(addr)
 }
