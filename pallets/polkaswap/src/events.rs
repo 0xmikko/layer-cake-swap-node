@@ -103,7 +103,7 @@ impl<T: Trait> Module<T> {
 			anonymous: false,
 		};
 
-		let fetched_events = Self::fetch_events(address, from_block, to_block).expect("Cant fetch events");
+		let fetched_events = Self::fetch_events(address, from_block, to_block)?;
 
 		debug::info!("Fetched {} events", fetched_events.len());
 		let mut result: Vec<ERC20Event> = vec![];
@@ -111,16 +111,10 @@ impl<T: Trait> Module<T> {
 		for log in fetched_events {
 			let raw_log = RawLog::from_tx(log);
 
-			debug::info!("Data: {}", encode(&raw_log.data));
-			for topic in &raw_log.topics {
-				debug::info!("Topic::{}", encode(topic));
-			}
-
 			match event.parse_log(raw_log) {
 				Ok(log) => {
-					debug::info!("Try to convert {}", log.params[0].value);
-
-					let erc20event = ERC20Event::try_from(log).expect("Can convert log");
+					let erc20event = ERC20Event::try_from(log)
+						.map_err(|_| <Error<T>>::EventParsingError)?;
 					result.push(erc20event);
 				}
 				Err(e) => {

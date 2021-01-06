@@ -159,6 +159,8 @@ decl_error! {
 
 		// Error returned when fetching github info
 		HttpFetchingError,
+
+		EventParsingError
 	}
 }
 

@@ -146,7 +146,7 @@ impl<T: Trait> Module<T> {
 
 		// Convert bytes into &str
 		let resp_str = str::from_utf8(&resp_bytes)
-			.map_err(|_| <Error<T>>::HttpFetchingError)?;
+			.map_err(|_| <Error<T>>::EventParsingError)?;
 
 		debug::info!("Eth logs response: {}", resp_str);
 		let response: EthGetLogsResponse = serde_json::from_str(resp_str).unwrap();
