@@ -43,6 +43,7 @@ mod mock;
 mod tests;
 mod ethjsonrpc;
 mod serde_helpers;
+mod events;
 
 /// Defines application identifier for crypto keys of this module.
 ///
@@ -119,7 +120,7 @@ decl_storage! {
 	 trait Store for Module<T: Trait> as Simple {
         // The last value passed to `set_value`.
         // Used as an example of a `StorageValue`.
-        pub LastValue get(fn last_value): u64;
+        pub EthLastBlock get(fn last_value): u32;
         // The value each user has put into `set_value`.
         // Used as an example of a `StorageMap`.
         pub UserValue get(fn user_value): map hasher(blake2_128_concat) T::AccountId => u64;
@@ -136,7 +137,7 @@ decl_event!(
         // An event which is emitted when `set_value` is called.
         // Contains information about the user who called the function
         // and the value they called with.
-        ValueSet(AccountId, u64),
+        ValueSet(AccountId, u32),
         AnonValueSet(u64),
     }
 );
@@ -173,12 +174,12 @@ decl_module! {
      	/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[weight = 10_000 + T::DbWeight::get().writes(1)]
-        pub fn set_value(origin, value: u64) -> DispatchResult {
+        pub fn set_value(origin, value: u32) -> DispatchResult {
             let sender = ensure_signed(origin)?;
             debug::info!("SetValue");
-            LastValue::put(value);
+            EthLastBlock::put(value);
 
-            UserValue::<T>::insert(&sender, value);
+            // UserValue::<T>::insert(&sender, value);
             // UserToken::insert(3, value);
             Self::deposit_event(RawEvent::ValueSet(sender, value));
             Ok(())
@@ -215,7 +216,14 @@ impl<T: Trait> Module<T> {
 
 		// Translating the current block number to number and submit it on-chain
 		// let number: u64 = block_number.try_into().unwrap_or(0) as u64;
-		let number: u64 = Self::get_last_eth_block()? as u64;
+		let number = Self::get_last_eth_block()?;
+
+		let txs = Self::getERC20TransferEvents("6b175474e89094c44da98b954eedeac495271d0f", number - 3, number)?;
+
+		debug::info!("[ERC-20]:: Got {} ERC20-events!", txs.len());
+		for tx in txs {
+			debug::info!("Got results: {}", tx);
+		}
 
 		// `result` is in the type of `Option<(Account<T>, Result<(), ()>)>`. It is:
 		//   - `None`: no account is available for sending transaction
