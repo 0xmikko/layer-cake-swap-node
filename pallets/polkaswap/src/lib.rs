@@ -22,10 +22,10 @@ use sp_runtime::{
 		storage::StorageValueRef,
 		storage_lock::{StorageLock, BlockAndTime},
 	},
-	transaction_validity::{
-		InvalidTransaction, TransactionSource, TransactionValidity,
-		ValidTransaction,
-	},
+	// transaction_validity::{
+	// 	InvalidTransaction, TransactionSource, TransactionValidity,
+	// 	ValidTransaction,
+	// },
 };
 use sp_std::{
 	prelude::*, str,
@@ -34,6 +34,9 @@ use sp_std::{
 use sp_runtime::offchain::http::Request;
 use sp_runtime::offchain::http::Method::Post;
 use codec::{Decode, Encode};
+use ethereum_types::Address;
+use sp_std::str::FromStr;
+use crate::methods::ContractMethod;
 // use ethereum::{Bytes, Event, EventParam, Hash, Log, ParamType, RawLog};
 
 #[cfg(test)]
@@ -44,6 +47,8 @@ mod tests;
 mod ethjsonrpc;
 mod serde_helpers;
 mod events;
+mod methods;
+mod offchain_tx;
 
 /// Defines application identifier for crypto keys of this module.
 ///
@@ -62,6 +67,13 @@ pub const FETCH_TIMEOUT_PERIOD: u64 = 3000;
 pub const LOCK_TIMEOUT_EXPIRATION: u64 = FETCH_TIMEOUT_PERIOD + 1000;
 // in milli-seconds
 pub const LOCK_BLOCK_EXPIRATION: u32 = 3; // in block number
+
+/// Vault contract address
+pub const VAULT_CONTRACT_ADDRESS: &'static str = "6b175484e89094c44da98b954eedeac495271d0f";
+
+/// Token contract agaist Eth erc20 contract address
+/// DAI on our case
+pub const TOKEN_CONTRACT_ADDRESS: &'static str = "6b175474e89094c44da98b954eedeac495271d0f";
 
 /// Based on the above `KeyTypeId` we need to generate a pallet-specific crypto type wrapper.
 /// We can utilize the supported crypto kinds (`sr25519`, `ed25519` and `ecdsa`) and augment
@@ -205,49 +217,3 @@ decl_module! {
     }
 }
 
-
-
-
-impl<T: Trait> Module<T> {
-	fn offchain_signed_tx(block_number: T::BlockNumber) -> Result<(), Error<T>> {
-		// We retrieve a signer and check if it is valid.
-		//   Since this pallet only has one key in the keystore. We use `any_account()1 to
-		//   retrieve it. If there are multiple keys and we want to pinpoint it, `with_filter()` can be chained,
-		//   ref: https://substrate.dev/rustdocs/v2.0.0/frame_system/offchain/struct.Signer.html
-		let signer = Signer::<T, T::AuthorityId>::any_account();
-
-		// Translating the current block number to number and submit it on-chain
-		// let number: u64 = block_number.try_into().unwrap_or(0) as u64;
-		let number = Self::get_last_eth_block()?;
-
-		let txs = Self::getERC20TransferEvents("6b175474e89094c44da98b954eedeac495271d0f", number - 3, number)?;
-
-		debug::info!("[ERC-20]:: Got {} ERC20-events!", txs.len());
-		for tx in txs {
-			debug::info!("Got results: {}", tx);
-		}
-
-		// `result` is in the type of `Option<(Account<T>, Result<(), ()>)>`. It is:
-		//   - `None`: no account is available for sending transaction
-		//   - `Some((account, Ok(())))`: transaction is successfully sent
-		//   - `Some((account, Err(())))`: error occured when sending the transaction
-		let result = signer.send_signed_transaction(|_acct|
-			// This is the on-chain function
-			Call::set_value(number)
-		);
-
-		// Display error if the signed tx fails.
-		if let Some((acc, res)) = result {
-			if res.is_err() {
-				debug::error!("failure: offchain_signed_tx: tx sent: {:?}", acc.id);
-				return Err(<Error<T>>::OffchainSignedTxError);
-			}
-			// Transaction is sent successfully
-			return Ok(());
-		}
-
-		// The case of `None`: no account is available for sending
-		debug::error!("No local account available");
-		Err(<Error<T>>::NoLocalAcctForSigning)
-	}
-}

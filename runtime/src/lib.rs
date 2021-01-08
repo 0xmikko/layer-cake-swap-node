@@ -268,7 +268,7 @@ impl pallet_sudo::Trait for Runtime {
 
 //
 //
-/// =====> POLKA-SWAP CONFIGURATION <========
+// =====> POLKA-SWAP CONFIGURATION <========
 //
 //
 

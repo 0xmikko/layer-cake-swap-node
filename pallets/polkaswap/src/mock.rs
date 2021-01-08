@@ -1,10 +1,11 @@
-use crate::{Module, Trait};
-use sp_core::H256;
 use frame_support::{impl_outer_origin, parameter_types, weights::Weight};
-use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup}, testing::Header, Perbill,
-};
 use frame_system as system;
+use sp_core::H256;
+use sp_runtime::{
+	Perbill, testing::Header, traits::{BlakeTwo256, IdentityLookup},
+};
+
+use crate::{Module, Trait};
 
 impl_outer_origin! {
 	pub enum Origin for Test {}

@@ -3,6 +3,7 @@ use core::{convert::*, fmt};
 // We use `alt_serde`, and Xanewok-modified `serde_json` so that we can compile the program
 // with serde(features `std`) and alt_serde(features `no_std`).
 use alt_serde::{Deserialize, Deserializer, Serialize};
+use ethabi::Hash;
 use ethereum_types::{Address, H256};
 use frame_support::{debug, traits::Get};
 use hex::encode;
@@ -10,15 +11,14 @@ use sp_runtime::{
 	offchain as rt_offchain,
 	RuntimeDebug,
 };
-use sp_std::str;
 use sp_std::fmt::Formatter;
 use sp_std::prelude::*;
+use sp_std::str;
 use sp_std::str::FromStr;
 
 use crate::serde_helpers::*;
 
 use super::{Error, Module, Trait};
-use ethabi::Hash;
 
 pub const FETCH_TIMEOUT_PERIOD: u64 = 30000;
 
@@ -48,8 +48,8 @@ pub(crate) struct EthBlockNumberResponse {
 #[serde(crate = "alt_serde")]
 #[derive(Serialize)]
 struct EthGetLogsRequest {
-	#[serde(serialize_with = "ser_address_to_hex")]
-	address: Address,
+	// #[serde(serialize_with = "ser_address_to_hex")]
+	// address: Address,
 
 	#[serde(serialize_with = "ser_u32_to_hex")]
 	from_block: u32,
@@ -131,7 +131,7 @@ impl<T: Trait> Module<T> {
 
 	pub(crate) fn fetch_events(address: &str, from_block: u32, to_block: u32) -> Result<Vec<TxLog>, Error<T>> {
 		let params = EthGetLogsRequest {
-			address: Address::from_str(address).expect("Wrong address"),
+			// address: Address::from_str(address).expect("Wrong address"),
 			from_block,
 			to_block,
 		};

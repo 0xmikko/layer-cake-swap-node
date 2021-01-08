@@ -18,3 +18,7 @@ run:
 build:
 	./scripts/build.sh
 
+.PHONY: dev
+dev:
+	./scripts/build_dev.sh
+
