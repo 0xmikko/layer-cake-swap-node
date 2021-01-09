@@ -25,8 +25,10 @@ use sp_runtime::{
 use sp_std::{
 	prelude::*, str,
 };
-use ethereum_types::Address;
 use crate::methods::SenderAmount;
+use crate::types::{EthAddress, Uint256};
+use codec::Encode;
+use ethabi::{Uint};
 
 #[cfg(test)]
 mod mock;
@@ -38,6 +40,7 @@ mod serde_helpers;
 mod events;
 mod methods;
 mod offchain_tx;
+mod types;
 
 /// Defines application identifier for crypto keys of this module.
 ///
@@ -124,8 +127,8 @@ decl_storage! {
         pub EthLastBlock get(fn last_value): u32;
         // The value each user has put into `set_value`.
         // Used as an example of a `StorageMap`.
-        pub UserValue get(fn user_value): map hasher(blake2_128_concat) T::AccountId => u64;
-        pub UserToken get(fn user_token): map hasher(blake2_128_concat) Vec<u8> => Vec<u8> ;
+        pub TokenBalance get(fn token_balance): map hasher(blake2_128_concat) EthAddress => Uint256;
+        pub EthBalance get(fn eth_balance): map hasher(blake2_128_concat) EthAddress => Uint256;
     }
 }
 
@@ -138,9 +141,15 @@ decl_event!(
         // An event which is emitted when `set_value` is called.
         // Contains information about the user who called the function
         // and the value they called with.
-        ValueSet(AccountId, u32),
-        AnonValueSet(u64),
-    }
+        DepositedTokens(Vec<u8>, u128),
+        DepositedETH(Vec<u8>, u128),
+        Withdraw(Vec<u8>, u128),
+		SwapToToken(Vec<u8>, u128),
+		SwapToETH(Vec<u8>, u128),
+		AddLiquidity(Vec<u8>, u128),
+		WithdrawLiquidity(Vec<u8>, u128),
+		ValueSet(AccountId, u32),
+}
 );
 
 decl_error! {
@@ -191,22 +200,29 @@ decl_module! {
 		/// DEPOSIT TOKEN FROM USER
         #[weight = 0]
         pub fn deposit_token(origin, sa: SenderAmount) -> DispatchResult  {
-			debug::info!("INSIDE]]] Try to deposit token");
-        	 let sender = ensure_signed(origin)?;
+        	let sender = ensure_signed(origin)?;
 
-             // UserToken::insert(value.clone(), value.clone());
-            // UserValue::<T>::insert(&sender, value);
-            // Self::deposit_event(RawEvent:: AnonValueSet(value));
-             Ok(())
+        	let updated_balance = if TokenBalance::contains_key(&sa.sender) {
+        			sa.amount.clone() + TokenBalance::get(&sa.sender)
+        		} else { sa.amount.clone() };
+
+			TokenBalance::insert(&sa.sender, &updated_balance);
+            Self::deposit_event(RawEvent::DepositedTokens(sa.sender.encode(), updated_balance.into()));
+            Ok(())
         }
 
         /// DEPOSIT ETH FROM USER
-        #[weight = 0]
-        pub fn deposit_eth(origin, value: Vec<u8>) {
-        	 let sender = ensure_signed(origin)?;
-             UserToken::insert(value.clone(), value.clone());
-            // UserValue::<T>::insert(&sender, value);
-            // Self::deposit_event(RawEvent:: AnonValueSet(value));
+      	#[weight = 0]
+        pub fn deposit_eth(origin, sa: SenderAmount) -> DispatchResult  {
+        	let sender = ensure_signed(origin)?;
+
+        	let updated_balance = if EthBalance::contains_key(&sa.sender) {
+        			sa.amount.clone() + EthBalance::get(&sa.sender)
+        		} else { sa.amount.clone() };
+
+			EthBalance::insert(&sa.sender, &updated_balance);
+            Self::deposit_event(RawEvent::DepositedETH(sa.sender.encode(), updated_balance.into()));
+            Ok(())
         }
 
 

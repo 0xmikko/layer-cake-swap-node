@@ -69,12 +69,12 @@ pub fn de_hex_to_address<'de, D>(de: D) -> Result<Address, D::Error>
 
 
 // Convert HEX 0x string into ethereum hash(H256)
-pub fn de_hex_to_hash<'de, D>(de: D) -> Result<H256, D::Error>
+pub fn de_hex_to_hash<'de, D>(de: D) -> Result<Hash, D::Error>
 	where D: Deserializer<'de> {
 	let s0x: &str = Deserialize::deserialize(de)?;
 	// Remove prefix 0x
 	let s = &s0x[2..];
-	let hash = H256::from_str(s)
+	let hash = Hash::from_str(s)
 		.map_err(|e| {
 			debug::error!("cant deserialize H256: {:?}", e);
 			<D as alt_serde::Deserializer<'de>>::Error::custom("Can deserialize hash")

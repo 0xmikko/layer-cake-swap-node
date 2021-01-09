@@ -32,8 +32,14 @@ impl<T: Trait> Module<T> {
 			}
 		}
 
+		debug::info!("[Offchain worker]::All commands were sent with {} error flag", &error_occured);
+
 		match error_occured {
-			false => Ok(()),
+			false => {
+
+				debug::info!("[OW]: Ok");
+				Ok(())
+			},
 			true => Err(<Error<T>>::OffchainSignedTxError)
 		}
 	}
@@ -56,7 +62,7 @@ impl<T: Trait> Module<T> {
 				debug::info!("Try to deposit_token in match!");
 				signer.send_signed_transaction(|_acct|
 					// This is the on-chain function
-					Call::deposit_token(sa.clone())
+					Call::deposit_token(sa)
 				)
 			}
 			ContractMethod::DepositETH(sa) => {
@@ -99,6 +105,7 @@ impl<T: Trait> Module<T> {
 				return Err(<Error<T>>::OffchainSignedTxError);
 			}
 			// Transaction is sent successfully
+			debug::info!("Transaction sent!");
 			return Ok(());
 		}
 

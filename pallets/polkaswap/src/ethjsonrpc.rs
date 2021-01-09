@@ -63,7 +63,7 @@ pub struct TxLog {
 	pub(crate) address: Address,
 
 	#[serde(rename = "blockHash", deserialize_with = "de_hex_to_hash")]
-	block_hash: H256,
+	block_hash: Hash,
 
 	#[serde(rename = "blockNumber", deserialize_with = "de_hex_to_u32")]
 	block_number: u32,
@@ -80,7 +80,7 @@ pub struct TxLog {
 	pub(crate) topics: Vec<Hash>,
 
 	#[serde(rename = "transactionHash", deserialize_with = "de_hex_to_hash")]
-	transaction_hash: H256,
+	pub(crate) transaction_hash: Hash,
 
 	#[serde(rename = "transactionIndex", deserialize_with = "de_hex_to_u32")]
 	transaction_index: u32,
@@ -122,7 +122,7 @@ impl<T: Trait> Module<T> {
 		let resp_str = str::from_utf8(&resp_bytes)
 			.map_err(|_| <Error<T>>::HttpFetchingError)?;
 
-		debug::info!("Eth last block response: {}", resp_str);
+		// debug::info!("Eth last block response: {}", resp_str);
 		let response: EthBlockNumberResponse = serde_json::from_str(resp_str).unwrap();
 		Ok(response.result)
 	}
@@ -146,7 +146,7 @@ impl<T: Trait> Module<T> {
 		let resp_str = str::from_utf8(&resp_bytes)
 			.map_err(|_| <Error<T>>::EventParsingError)?;
 
-		debug::info!("Eth logs response: {}", resp_str);
+		// debug::info!("Eth logs response: {}", resp_str);
 		let response: EthGetLogsResponse = serde_json::from_str(resp_str).unwrap();
 		Ok(response.result)
 	}
