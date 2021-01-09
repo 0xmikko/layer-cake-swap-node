@@ -4,7 +4,6 @@ use frame_support::debug;
 use super::{Error, Module, Trait, Call};
 use crate::methods::ContractMethod;
 
-
 impl<T: Trait> Module<T> {
 	pub fn offchain_signed_tx(block_number: T::BlockNumber) -> Result<(), Error<T>> {
 
@@ -23,7 +22,7 @@ impl<T: Trait> Module<T> {
 
 		// ToDo: Add state to store all commands
 		for cmd in txs {
-			debug::info!("Got results: {}", cmd);
+			debug::info!("Got results: {}", &cmd);
 			match Self::send_command(cmd) {
 				Ok(_) => {}
 				Err(e) => {
@@ -46,23 +45,52 @@ impl<T: Trait> Module<T> {
 		//   ref: https://substrate.dev/rustdocs/v2.0.0/frame_system/offchain/struct.Signer.html
 		let signer = Signer::<T, T::AuthorityId>::any_account();
 
+		debug::info!("Send command: {}", &cmd);
 
 		// `result` is in the type of `Option<(Account<T>, Result<(), ()>)>`. It is:
 		//   - `None`: no account is available for sending transaction
 		//   - `Some((account, Ok(())))`: transaction is successfully sent
 		//   - `Some((account, Err(())))`: error occured when sending the transaction
-		let result = signer.send_signed_transaction(|_acct|
-			// This is the on-chain function
-			match cmd {
-				ContractMethod::DepositToken(_) => { Call::set_value(32u32) }
-				ContractMethod::DepositETH(_) => { Call::set_value(32u32) }
-				ContractMethod::Withdraw(_) => { Call::set_value(32u32) }
-				ContractMethod::SwapToToken(_) => { Call::set_value(32u32) }
-				ContractMethod::SwapToETH(_) => { Call::set_value(32u32) }
-				ContractMethod::AddLiquidity(_) => { Call::set_value(32u32) }
-				ContractMethod::WithdrawLiquidity => { Call::set_value(32u32) }
+		let result = match cmd {
+			ContractMethod::DepositToken(sa) => {
+				debug::info!("Try to deposit_token in match!");
+				signer.send_signed_transaction(|_acct|
+					// This is the on-chain function
+					Call::deposit_token(sa.clone())
+				)
 			}
-		);
+			ContractMethod::DepositETH(sa) => {
+				signer.send_signed_transaction(|_acct|
+					// This is the on-chain function
+					Call::deposit_token(sa.clone())
+				)
+			}
+			ContractMethod::Withdraw(_) => {
+				signer.send_signed_transaction(|_acct|
+					// This is the on-chain function
+					Call::set_value(32u32))
+			}
+			ContractMethod::SwapToToken(_) => {
+				signer.send_signed_transaction(|_acct|
+					// This is the on-chain function
+					Call::set_value(32u32))
+			}
+			ContractMethod::SwapToETH(_) => {
+				signer.send_signed_transaction(|_acct|
+					// This is the on-chain function
+					Call::set_value(32u32))
+			}
+			ContractMethod::AddLiquidity(_) => {
+				signer.send_signed_transaction(|_acct|
+					// This is the on-chain function
+					Call::set_value(32u32))
+			}
+			ContractMethod::WithdrawLiquidity => {
+				signer.send_signed_transaction(|_acct|
+					// This is the on-chain function
+					Call::set_value(32u32))
+			}
+		};
 
 		// Display error if the signed tx fails.
 		if let Some((acc, res)) = result {

@@ -1,10 +1,10 @@
-use alt_serde::{Serialize, Serializer, Deserializer, Deserialize};
+use alt_serde::{Serializer, Deserializer, Deserialize};
 use ethereum_types::{Address, U256, H256};
 use sp_std::str::{FromStr};
 use sp_std::prelude::*;
 use frame_support::{debug};
 use alt_serde::de::{Error, Visitor, SeqAccess};
-use hex::{encode, decode, ToHex};
+use hex::{encode, decode};
 use ethabi::Hash;
 use sp_std::fmt;
 use sp_std::fmt::Formatter;

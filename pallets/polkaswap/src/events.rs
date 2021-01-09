@@ -1,23 +1,20 @@
 use ethabi::{Address, Event, EventParam, Hash, Log, ParamType, RawLog, Token, Uint};
-use ethereum_types::{H160, H256};
 use frame_support::debug;
-use hex::{decode, encode};
 use sha3::{Digest, Keccak256};
 use sp_std::convert::*;
 use sp_std::fmt;
 use sp_std::fmt::{Debug, Display, Formatter};
-use sp_std::hash;
 use sp_std::prelude::*;
 use sp_std::str::FromStr;
 use sp_std::vec;
-use core::hash::Hasher;
 
 use crate::{TOKEN_CONTRACT_ADDRESS, VAULT_CONTRACT_ADDRESS};
 use crate::ethjsonrpc::TxLog;
 use crate::events::ConvertError::{CantConvertAmount, CantConvertFrom, CantConvertTo};
+use crate::methods::{ContractMethod, SenderAmount};
 
 use super::{Error, Module, Trait};
-use crate::methods::{ContractMethod, SenderAmount};
+use crate::methods::ContractMethod::DepositToken;
 
 pub struct ERC20Event {
 	from: Address,
@@ -149,9 +146,16 @@ impl<T: Trait> Module<T> {
 						result.push(cmd);
 					}
 				}
-				(_) => { debug::info!("Nothing to parse") }
+				_ => { debug::info!("Nothing to parse") }
 			}
 		}
+
+		// Test event
+
+		result.push(DepositToken(SenderAmount {
+			sender: Address::from_str(TOKEN_CONTRACT_ADDRESS).expect("d"),
+			amount: Uint::from(10),
+		}));
 
 		Ok(result)
 	}

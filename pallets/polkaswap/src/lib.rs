@@ -5,15 +5,14 @@
 /// https://substrate.dev/docs/en/knowledgebase/runtime/frame
 
 use frame_support::{debug, decl_error, decl_event, decl_module, decl_storage, dispatch,
-					dispatch::DispatchResult, Hashable, traits::Get};
+					dispatch::DispatchResult, traits::Get};
 use frame_system::{
-	self as system, ensure_none, ensure_signed,
+	self as system, ensure_signed,
 	offchain::{
-		AppCrypto, CreateSignedTransaction, SendSignedTransaction, SendUnsignedTransaction,
-		SignedPayload, SigningTypes, Signer, SubmitTransaction,
+		AppCrypto, CreateSignedTransaction,
 	},
 };
-use core::{convert::*, fmt};
+use core::{convert::*};
 use sp_core::crypto::KeyTypeId;
 use sp_runtime::{
 	RuntimeDebug,
@@ -22,22 +21,12 @@ use sp_runtime::{
 		storage::StorageValueRef,
 		storage_lock::{StorageLock, BlockAndTime},
 	},
-	// transaction_validity::{
-	// 	InvalidTransaction, TransactionSource, TransactionValidity,
-	// 	ValidTransaction,
-	// },
 };
 use sp_std::{
 	prelude::*, str,
-	collections::vec_deque::VecDeque,
 };
-use sp_runtime::offchain::http::Request;
-use sp_runtime::offchain::http::Method::Post;
-use codec::{Decode, Encode};
 use ethereum_types::Address;
-use sp_std::str::FromStr;
-use crate::methods::ContractMethod;
-// use ethereum::{Bytes, Event, EventParam, Hash, Log, ParamType, RawLog};
+use crate::methods::SenderAmount;
 
 #[cfg(test)]
 mod mock;
@@ -199,13 +188,29 @@ decl_module! {
             Ok(())
         }
 
+		/// DEPOSIT TOKEN FROM USER
         #[weight = 0]
-        pub fn set_value_str(origin, value: Vec<u8>) {
+        pub fn deposit_token(origin, sa: SenderAmount) -> DispatchResult  {
+			debug::info!("INSIDE]]] Try to deposit token");
+        	 let sender = ensure_signed(origin)?;
+
+             // UserToken::insert(value.clone(), value.clone());
+            // UserValue::<T>::insert(&sender, value);
+            // Self::deposit_event(RawEvent:: AnonValueSet(value));
+             Ok(())
+        }
+
+        /// DEPOSIT ETH FROM USER
+        #[weight = 0]
+        pub fn deposit_eth(origin, value: Vec<u8>) {
         	 let sender = ensure_signed(origin)?;
              UserToken::insert(value.clone(), value.clone());
             // UserValue::<T>::insert(&sender, value);
             // Self::deposit_event(RawEvent:: AnonValueSet(value));
         }
+
+
+
 
         // Offchain worker runs after each block
 		fn offchain_worker(block_number: T::BlockNumber) {

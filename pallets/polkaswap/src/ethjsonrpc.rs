@@ -1,20 +1,18 @@
-use core::{convert::*, fmt};
+use core::fmt;
 
 // We use `alt_serde`, and Xanewok-modified `serde_json` so that we can compile the program
 // with serde(features `std`) and alt_serde(features `no_std`).
-use alt_serde::{Deserialize, Deserializer, Serialize};
+use alt_serde::{Deserialize, Serialize};
 use ethabi::Hash;
 use ethereum_types::{Address, H256};
 use frame_support::{debug, traits::Get};
 use hex::encode;
 use sp_runtime::{
 	offchain as rt_offchain,
-	RuntimeDebug,
 };
 use sp_std::fmt::Formatter;
 use sp_std::prelude::*;
 use sp_std::str;
-use sp_std::str::FromStr;
 
 use crate::serde_helpers::*;
 
