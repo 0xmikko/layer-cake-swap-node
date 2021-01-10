@@ -1,13 +1,11 @@
 use alt_serde::{Serializer, Deserializer, Deserialize};
-use ethereum_types::{Address, U256, H256};
 use sp_std::str::{FromStr};
 use sp_std::prelude::*;
 use frame_support::{debug};
 use alt_serde::de::{Error, Visitor, SeqAccess};
 use hex::{encode, decode};
-use ethabi::Hash;
-use sp_std::fmt;
-use sp_std::fmt::Formatter;
+use ethabi::{Address, Hash};
+use core::{fmt, fmt::Formatter};
 
 // SERDE HELPERS FOR CONVERTING STRINGS INTO DIFFERENT TYPES
 
@@ -69,25 +67,17 @@ pub fn de_hex_to_address<'de, D>(de: D) -> Result<Address, D::Error>
 
 
 // Convert HEX 0x string into ethereum hash(H256)
-pub fn de_hex_to_hash<'de, D>(de: D) -> Result<H256, D::Error>
+pub fn de_hex_to_hash<'de, D>(de: D) -> Result<Hash, D::Error>
 	where D: Deserializer<'de> {
 	let s0x: &str = Deserialize::deserialize(de)?;
 	// Remove prefix 0x
 	let s = &s0x[2..];
-	let hash = H256::from_str(s)
+	let hash = Hash::from_str(s)
 		.map_err(|e| {
 			debug::error!("cant deserialize H256: {:?}", e);
 			<D as alt_serde::Deserializer<'de>>::Error::custom("Can deserialize hash")
 		})?;
 	Ok(hash)
-}
-
-// Convert value to Uint256
-pub fn de_hex_to_uint256<'de, D>(de: D) -> Result<U256, D::Error>
-	where D: Deserializer<'de> {
-	let s: &str = Deserialize::deserialize(de)?;
-	// Remove prefix 0x
-	Ok(U256::from_str_radix(s, 16).expect("Cant convert"))
 }
 
 // Convert data in Hex to Vec<u8>

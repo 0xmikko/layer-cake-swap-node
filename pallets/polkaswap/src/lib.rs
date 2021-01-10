@@ -1,10 +1,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use core::{convert::*};
+
 /// Edit this file to define custom logic or remove it if it is not needed.
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// https://substrate.dev/docs/en/knowledgebase/runtime/frame
 
-use frame_support::{debug, decl_error, decl_event, decl_module, decl_storage, dispatch,
+use frame_support::{debug, decl_error, decl_event, decl_module, decl_storage,
 					dispatch::DispatchResult, traits::Get};
 use frame_system::{
 	self as system, ensure_signed,
@@ -12,21 +14,12 @@ use frame_system::{
 		AppCrypto, CreateSignedTransaction,
 	},
 };
-use core::{convert::*};
 use sp_core::crypto::KeyTypeId;
-use sp_runtime::{
-	RuntimeDebug,
-	offchain as rt_offchain,
-	offchain::{
-		storage::StorageValueRef,
-		storage_lock::{StorageLock, BlockAndTime},
-	},
-};
 use sp_std::{
 	prelude::*, str,
 };
-use ethereum_types::Address;
-use crate::methods::SenderAmount;
+
+use crate::types::{ContractMethod, SenderAmount};
 
 #[cfg(test)]
 mod mock;
@@ -34,10 +27,11 @@ mod mock;
 #[cfg(test)]
 mod tests;
 mod ethjsonrpc;
-mod serde_helpers;
 mod events;
-mod methods;
+pub mod types;
 mod offchain_tx;
+mod payloads;
+mod errors;
 
 /// Defines application identifier for crypto keys of this module.
 ///
@@ -68,13 +62,14 @@ pub const TOKEN_CONTRACT_ADDRESS: &'static str = "6b175474e89094c44da98b954eedea
 /// We can utilize the supported crypto kinds (`sr25519`, `ed25519` and `ecdsa`) and augment
 /// them with the pallet-specific identifier.
 pub mod crypto {
-	use crate::KEY_TYPE;
 	use sp_core::sr25519::Signature as Sr25519Signature;
-	use sp_runtime::app_crypto::{app_crypto, sr25519};
 	use sp_runtime::{
-		traits::Verify,
-		MultiSignature, MultiSigner,
+		MultiSignature,
+		MultiSigner, traits::Verify,
 	};
+	use sp_runtime::app_crypto::{app_crypto, sr25519};
+
+	use crate::KEY_TYPE;
 
 	app_crypto!(sr25519, KEY_TYPE);
 
@@ -188,11 +183,17 @@ decl_module! {
             Ok(())
         }
 
+  		#[weight = 0]
+        pub fn sync_eth(origin, sa: Vec<ContractMethod>) -> DispatchResult  {
+        		debug::info!("TRY TO SYNC");
+        		Ok(())
+        }
+
 		/// DEPOSIT TOKEN FROM USER
         #[weight = 0]
         pub fn deposit_token(origin, sa: SenderAmount) -> DispatchResult  {
 			debug::info!("INSIDE]]] Try to deposit token");
-        	 let sender = ensure_signed(origin)?;
+        	 let _sender = ensure_signed(origin)?;
 
              // UserToken::insert(value.clone(), value.clone());
             // UserValue::<T>::insert(&sender, value);
@@ -203,7 +204,7 @@ decl_module! {
         /// DEPOSIT ETH FROM USER
         #[weight = 0]
         pub fn deposit_eth(origin, value: Vec<u8>) {
-        	 let sender = ensure_signed(origin)?;
+        	 let _sender = ensure_signed(origin)?;
              UserToken::insert(value.clone(), value.clone());
             // UserValue::<T>::insert(&sender, value);
             // Self::deposit_event(RawEvent:: AnonValueSet(value));
