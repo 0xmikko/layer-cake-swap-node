@@ -12,7 +12,7 @@ use super::sender_amount::SenderAmount;
 pub enum ContractMethod {
 	DepositToken(SenderAmount),
 	DepositETH(SenderAmount),
-	Withdraw(SenderAmount),
+	WithdrawToken(SenderAmount),
 	SwapToToken(SenderAmount),
 	SwapToETH(SenderAmount),
 	AddLiquidity(SenderAmount),
@@ -24,7 +24,7 @@ impl Encode for ContractMethod {
 		match self {
 			ContractMethod::DepositToken(sa) => { ContractMethod::encode_item(0u8, sa) }
 			ContractMethod::DepositETH(sa) => { ContractMethod::encode_item(1u8, sa) }
-			ContractMethod::Withdraw(sa) => { ContractMethod::encode_item(2u8, sa) }
+			ContractMethod::WithdrawToken(sa) => { ContractMethod::encode_item(2u8, sa) }
 			ContractMethod::SwapToToken(sa) => { ContractMethod::encode_item(3u8, sa) }
 			ContractMethod::SwapToETH(sa) => { ContractMethod::encode_item(4u8, sa) }
 			ContractMethod::AddLiquidity(sa) => { ContractMethod::encode_item(5u8, sa) }
@@ -40,7 +40,7 @@ impl Decode for ContractMethod {
 		match cm_type {
 			0u8 => Ok(ContractMethod::DepositToken(sa)),
 			1u8 => Ok(ContractMethod::DepositETH(sa)),
-			2u8 => Ok(ContractMethod::Withdraw(sa)),
+			2u8 => Ok(ContractMethod::WithdrawToken(sa)),
 			3u8 => Ok(ContractMethod::SwapToToken(sa)),
 			4u8 => Ok(ContractMethod::SwapToETH(sa)),
 			5u8 => Ok(ContractMethod::AddLiquidity(sa)),
@@ -78,7 +78,7 @@ impl Display for ContractMethod {
 				write!(f, "[Deposit ETH]: from: {}, amount: {}", dm.sender, dm.amount)
 			}
 
-			ContractMethod::Withdraw(dm) => {
+			ContractMethod::WithdrawToken(dm) => {
 				write!(f, "[Withdraw]: from: {}, amount: {}", dm.sender, dm.amount)
 			}
 

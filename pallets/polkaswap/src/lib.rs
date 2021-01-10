@@ -114,7 +114,7 @@ decl_storage! {
 	// A unique name is used to ensure that the pallet's storage items are isolated.
 	// This name may be updated, but each pallet in the runtime must use a unique name.
 	// ---------------------------------vvvvvvvvvvvvvv
-	 trait Store for Module<T: Trait> as Simple {
+	 trait Store for Module<T: Trait> as PolkaSwap {
 
 	 	/// Last block synced with ethereum
         pub EthLastSyncedBlock get(fn eth_last_synced_block): u32;
@@ -124,6 +124,13 @@ decl_storage! {
 
         /// Eth balance for eth user
         pub EthBalance get(fn eth_balance): map hasher(blake2_128_concat) EthAddress => Uint256;
+
+        /// Pool token liquidity
+        pub PoolTokenLiquidity get(fn pool_token_liquidity) : Uint256;
+
+		/// Pool eth liquidity
+        pub PoolETHLiquidity get(fn pool_eth_liquidity) : Uint256;
+
     }
 }
 
@@ -133,9 +140,10 @@ decl_event!(
 	 pub enum Event<T> where
         AccountId = <T as frame_system::Trait>::AccountId,
     {
+    	// emitted when user deposit tokens on account
         DepositedToken(Vec<u8>, u128),
         DepositedETH(Vec<u8>, u128),
-        Withdraw(Vec<u8>, u128),
+        WithdrawToken(Vec<u8>, u128),
 		SwapToToken(Vec<u8>, u128),
 		SwapToETH(Vec<u8>, u128),
 		AddLiquidity(Vec<u8>, u128),
@@ -143,6 +151,9 @@ decl_event!(
 
 		EthBlockSynced(u32),
 		ValueSet(AccountId, u32),
+
+		// Errors
+		WithdrawTokenError(Vec<u8>),
 }
 );
 
@@ -164,9 +175,13 @@ decl_error! {
 		// Error returned when fetching github info
 		HttpFetchingError,
 
-		EventParsingError
+		EventParsingError,
+
+		ContractTokenError,
 	}
 }
+
+pub struct ContractError(&'static str);
 
 // Dispatchable functions allows users to interact with the pallet and invoke state changes.
 // These functions materialize as "extrinsics", which are often compared to transactions.
@@ -195,6 +210,54 @@ decl_module! {
         #[weight = 0]
         pub fn sync_eth_block(origin, be: BlockEvents) -> DispatchResult  {
         	debug::info!("{:?}", be);
+
+			///
+			/// ==================== ::CONTRACT FUNCTIONS:: ==========================
+			/// Deposit token for user
+        	fn deposit_token(sa: SenderAmount) -> Result<SenderAmount, ContractError>{
+				let updated_balance = if TokenBalance::contains_key(&sa.sender) {
+						sa.amount + TokenBalance::get(&sa.sender)
+					} else { sa.amount };
+
+				TokenBalance::insert(&sa.sender, &updated_balance);
+				Ok(SenderAmount{ sender: sa.sender, amount: updated_balance })
+        	}
+
+			/// Deposit Eth for user
+			fn deposit_eth(sa: SenderAmount) -> Result<SenderAmount, ContractError> {
+				let updated_balance = if EthBalance::contains_key(&sa.sender) {
+									sa.amount + EthBalance::get(&sa.sender)
+								} else { sa.amount};
+
+				EthBalance::insert(&sa.sender, &updated_balance);
+				Ok(SenderAmount{ sender: sa.sender, amount: updated_balance })
+			}
+
+			/// Withdraw function
+			/// @return SenderAmount with real numbers to be withdrawn, else ContractError
+			fn withdraw_token(sa: SenderAmount) -> Result<SenderAmount, ContractError> {
+				if TokenBalance::contains_key(&sa.sender) {
+					return Err(ContractError("User not found"));
+				}
+				let amount = get_min_user_token_balance(&sa);
+				if amount.clone() > Uint256::from(0)  {
+					let updated_balance = TokenBalance::get(&sa.sender) - amount;
+					TokenBalance::insert(&sa.sender, &updated_balance);
+					Ok(SenderAmount{ sender: sa.sender, amount: updated_balance })
+				} else {
+					Err(ContractError("Nothing to with"))
+				}
+			}
+
+
+			/// ==================== ::CONTRACT HELPERS:: ==========================
+			fn get_min_user_token_balance(sa: &SenderAmount) -> Uint256 {
+				let user_token_balance = TokenBalance::get(&sa.sender);
+				cmp::min(sa.amount, user_token_balance)
+			}
+
+
+
         	/// Get block number of incoming message
         	let block_to_sync = be.block_number;
 
@@ -208,26 +271,40 @@ decl_module! {
 
 						// Deposit Token Method
 						DepositToken(sa) => {
-							let updated_balance = if TokenBalance::contains_key(&sa.sender) {
-									sa.amount + TokenBalance::get(&sa.sender)
-								} else { sa.amount };
-
-							TokenBalance::insert(&sa.sender, &updated_balance);
-							Self::deposit_event(RawEvent::DepositedToken(sa.sender.encode(), updated_balance.into()));
+							match deposit_token(sa) {
+								Ok(res) => {
+									Self::deposit_event(RawEvent::DepositedToken(res.sender.encode(), res.amount.into()));
+								}
+								Err(err) => {
+									debug::error!("Can deposit event: {}", err.0);
+								}
+							}
 						}
 
 						// Deposit ETH method
 						DepositETH(sa) => {
-							let updated_balance = if EthBalance::contains_key(&sa.sender) {
-									sa.amount + EthBalance::get(&sa.sender)
-								} else { sa.amount};
-
-							EthBalance::insert(&sa.sender, &updated_balance);
-							Self::deposit_event(RawEvent::DepositedETH(sa.sender.encode(), updated_balance.into()));
+							match deposit_eth(sa) {
+								Ok(res) => {
+									Self::deposit_event(RawEvent::DepositedETH(res.sender.encode(), res.amount.into()));
+								}
+								Err(err) => {
+									debug::error!("Can deposit event: {}", err.0);
+								}
+							}
 						}
 
 						// Withdraw method
-						Withdraw(sa) => { }
+						WithdrawToken(sa) => {
+						match withdraw_token(sa) {
+								Ok(res) => {
+									Self::deposit_event(RawEvent::WithdrawToken(res.sender.encode(), res.amount.into()));
+								}
+								Err(err) => {
+									debug::error!("Can deposit event: {}", err.0);
+									Self::deposit_event(RawEvent::WithdrawTokenError(err.0.encode()))
+								}
+							}
+						 }
 
 						// Swap to token method <==================================================
 						SwapToToken(sa) => {
@@ -236,7 +313,12 @@ decl_module! {
 
 						}
 						SwapToETH(sa) => {  }
-						AddLiquidity(sa) => {  }
+						AddLiquidity(sa) => {
+							let user_token_balance = TokenBalance::get(&sa.sender);
+							let user_eth_balance = EthBalance::get(&sa.sender);
+
+							let eth_to_swap = cmp::min(sa.amount, user_eth_balance);
+						  }
 						WithdrawLiquidity(sa) => {  }
 					}
 				}

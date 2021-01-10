@@ -5,7 +5,7 @@ use core::cmp::{Ord, Ordering};
 use ethabi::Uint;
 use sp_std::fmt::{Display, Formatter};
 use sp_std::{fmt, prelude::*, convert::TryFrom};
-use sp_std::ops::Add;
+use sp_std::ops::{Add, Sub};
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Default)]
 pub struct Uint256(Uint);
@@ -73,6 +73,14 @@ impl Add for Uint256 {
 
 	fn add(self, rhs: Self) -> Self::Output {
 		(rhs.0 + self.0).into()
+	}
+}
+
+impl Sub for Uint256 {
+	type Output = Uint256;
+
+	fn sub(self, rhs: Self) -> Self::Output {
+		(self.0 - rhs.0).into()
 	}
 }
 

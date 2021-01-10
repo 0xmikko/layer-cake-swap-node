@@ -3,7 +3,6 @@ use frame_support::debug;
 
 use super::{Error, Module, Trait, Call};
 use sp_runtime::offchain::storage::StorageValueRef;
-use crate::storage::LocalStorage;
 
 const SYNC_DELAY : u32 = 3;
 const LS_LAST_BLOCK_KEY: &[u8] = b"offchain-polkaswap::storage";

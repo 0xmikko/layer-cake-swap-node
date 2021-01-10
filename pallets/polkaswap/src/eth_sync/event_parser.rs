@@ -115,7 +115,7 @@ impl<T: Trait> Module<T> {
 			} else { None }
 		} else if *topic == get_topic_hash(b"Withdraw(address,uin256)") {
 			if let Some(sa) = parse_sender_value_event("Withdraw", raw_log) {
-				Some(ContractMethod::Withdraw(sa))
+				Some(ContractMethod::WithdrawToken(sa))
 			} else { None }
 		} else if *topic == get_topic_hash(b"SwapToToken(address,uin256)") {
 			if let Some(sa) = parse_sender_value_event("SwapToToken", raw_log) {
