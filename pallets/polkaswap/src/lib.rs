@@ -33,7 +33,6 @@ mod errors;
 mod payloads;
 mod contract;
 mod eth_sync;
-mod storage;
 
 /// Defines application identifier for crypto keys of this module.
 ///
@@ -117,13 +116,13 @@ decl_storage! {
 	// ---------------------------------vvvvvvvvvvvvvv
 	 trait Store for Module<T: Trait> as Simple {
 
-	 	// Last block synced with ethereum
+	 	/// Last block synced with ethereum
         pub EthLastSyncedBlock get(fn eth_last_synced_block): u32;
 
-        // Token balance for eth user
+        /// Token balance for eth user
         pub TokenBalance get(fn token_balance): map hasher(blake2_128_concat) EthAddress => Uint256;
 
-        // Eth balance for eth user
+        /// Eth balance for eth user
         pub EthBalance get(fn eth_balance): map hasher(blake2_128_concat) EthAddress => Uint256;
     }
 }
@@ -134,9 +133,6 @@ decl_event!(
 	 pub enum Event<T> where
         AccountId = <T as frame_system::Trait>::AccountId,
     {
-        // An event which is emitted when `set_value` is called.
-        // Contains information about the user who called the function
-        // and the value they called with.
         DepositedToken(Vec<u8>, u128),
         DepositedETH(Vec<u8>, u128),
         Withdraw(Vec<u8>, u128),
@@ -199,8 +195,14 @@ decl_module! {
         #[weight = 0]
         pub fn sync_eth_block(origin, be: BlockEvents) -> DispatchResult  {
         	debug::info!("{:?}", be);
+        	/// Get block number of incoming message
         	let block_to_sync = be.block_number;
+
+        	/// Compare with last synced block on-chain
+        	/// Adding new info only if it's greater, otherwise finish with error
         	if block_to_sync > EthLastSyncedBlock::get() {
+
+        		/// Iterate by all commands in block
 				for cmd in be.methods.clone() {
 					match cmd {
 
@@ -251,8 +253,6 @@ decl_module! {
 
         // Offchain worker runs after each block
 		fn offchain_worker(block_number: T::BlockNumber) {
-			debug::info!("Entering off-chain worker");
-			debug::info!("{}", T::EthProviderEndpoint::get());
 			Self::offchain_eth_sync(block_number);
 			}
 
