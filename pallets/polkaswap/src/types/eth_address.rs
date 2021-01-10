@@ -4,6 +4,7 @@ use frame_support::debug;
 use sp_std::{fmt, prelude::*};
 use sp_std::fmt::{Display, Formatter};
 use sp_std::str::FromStr;
+use hex::encode;
 
 /// EthAddress struct
 /// a wrapper for Address stuct with Encode, Decode traits
@@ -27,10 +28,11 @@ impl Decode for EthAddress {
 	fn decode<I: Input>(value: &mut I) -> Result<Self, Error> {
 		let mut sender_bytes: Vec<u8> = vec![0; 20];
 		match value.read(&mut sender_bytes) {
-			Ok(_) => { Ok(EthAddress(Address::from_slice(&*sender_bytes))) }
+			Ok(_) => {
+				Ok(EthAddress(Address::from_slice(&*sender_bytes))) }
 
 			Err(e) => {
-				debug::error!("cant convert uin256: {}", e.what());
+				debug::error!("cant convert ETH Address: {}", e.what());
 				Err(Error::from("Cant decode eth address"))
 			}
 		}

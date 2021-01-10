@@ -5,7 +5,9 @@ use core::cmp::{Ord, Ordering};
 use ethabi::Uint;
 use sp_std::fmt::{Display, Formatter};
 use sp_std::{fmt, prelude::*, convert::TryFrom};
-use sp_std::ops::{Add, Sub};
+use sp_std::ops::{Add, Sub, Div, Mul};
+use frame_support::traits::IsType;
+use hex::encode;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Default)]
 pub struct Uint256(Uint);
@@ -16,7 +18,10 @@ impl Encode for Uint256 {
 	}
 
 	fn encode(&self) -> Vec<u8> {
-		Vec::from(self.0.0[0].to_be_bytes())
+		let mut res = vec![0; 32];
+		self.0.to_little_endian(res.into_mut());
+		debug::info!("BYTES:{}", encode(&res));
+		res
 	}
 }
 
@@ -24,17 +29,11 @@ impl EncodeLike for Uint256 {}
 
 impl Decode for Uint256 {
 	fn decode<I: Input>(value: &mut I) -> Result<Self, Error> {
-		let mut amount_bytes: Vec<u8> = vec![0; 8];
+		let mut amount_bytes: Vec<u8> = vec![0; 32];
 
 		match value.read(&mut amount_bytes) {
 			Ok(_) => {
-				match Uint::try_from(amount_bytes.as_slice()) {
-					Ok(value) => Ok(Uint256(value)),
-					Err(e) => {
-						debug::error!("cant convert uin256: {}", e);
-						Err(Error::from("Cant convert uint256"))
-					}
-				}
+				Ok(Uint256(Uint::from_little_endian(amount_bytes.as_slice())))
 			}
 			Err(e) => {
 				debug::error!("cant convert uin256: {:?}", e);
@@ -62,8 +61,14 @@ impl From<Uint256> for u128 {
 	}
 }
 
-impl From<u32> for Uint256 {
-	fn from(num: u32) -> Self {
+impl From<i32> for Uint256 {
+	fn from(num: i32) -> Self {
+		Uint::from(num).into()
+	}
+}
+
+impl From<u128> for Uint256 {
+	fn from(num: u128) -> Self {
 		Uint::from(num).into()
 	}
 }
@@ -83,6 +88,24 @@ impl Sub for Uint256 {
 		(self.0 - rhs.0).into()
 	}
 }
+
+impl Mul for Uint256 {
+	type Output = Uint256;
+
+	fn mul(self, rhs: Self) -> Self::Output {
+		(self.0 * rhs.0).into()
+	}
+}
+
+impl Div for Uint256 {
+	type Output = Uint256;
+
+	fn div(self, rhs: Self) -> Self::Output {
+		(self.0 / rhs.0).into()
+	}
+}
+
+
 
 impl Ord for Uint256 {
 	fn cmp(&self, other: &Self) -> Ordering {

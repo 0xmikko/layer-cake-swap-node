@@ -59,6 +59,10 @@ pub const VAULT_CONTRACT_ADDRESS: &'static str = "6b175484e89094c44da98b954eedea
 /// DAI on our case
 pub const TOKEN_CONTRACT_ADDRESS: &'static str = "6b175474e89094c44da98b954eedeac495271d0f";
 
+/// Initial ratio for token to ETH
+/// Used at first withdraw
+pub const INITIAL_RATIO : u128 = 100u128;
+
 /// Based on the above `KeyTypeId` we need to generate a pallet-specific crypto type wrapper.
 /// We can utilize the supported crypto kinds (`sr25519`, `ed25519` and `ecdsa`) and augment
 /// them with the pallet-specific identifier.
@@ -220,6 +224,7 @@ decl_module! {
 					} else { sa.amount };
 
 				TokenBalance::insert(&sa.sender, &updated_balance);
+				PoolTokenLiquidity::put(Uint256::from(20u128));
 				Ok(SenderAmount{ sender: sa.sender, amount: updated_balance })
         	}
 
@@ -256,6 +261,15 @@ decl_module! {
 				cmp::min(sa.amount, user_token_balance)
 			}
 
+			fn get_ratio() -> Uint256 {
+				let token_liquidity = PoolTokenLiquidity::get();
+				let eth_liquidity = PoolETHLiquidity::get();
+				if token_liquidity.clone() == Uint256::from(0) && eth_liquidity.clone() == Uint256::from(0) {
+					return INITIAL_RATIO.into();
+				}
+
+				token_liquidity / eth_liquidity
+			}
 
 
         	/// Get block number of incoming message
