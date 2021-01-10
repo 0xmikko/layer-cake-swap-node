@@ -20,7 +20,7 @@ impl<T: Trait> Module<T> {
 
 		let txs= Self::get_block_events(number)?;
 
-		debug::info!("[Offchain worker]:: Got {} commands!", txs.len());
+		debug::info!("[Offchain worker]:: Got {} commands!", txs.methods.len());
 
 		let signer = Signer::<T, T::AuthorityId>::any_account();
 		let result = signer.send_signed_transaction(|_acct|

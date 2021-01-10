@@ -8,13 +8,13 @@ use sp_std::str::FromStr;
 use super::{Error, Module, Trait};
 
 use crate::{TOKEN_CONTRACT_ADDRESS, VAULT_CONTRACT_ADDRESS};
-use crate::types::{ContractMethod, SenderAmount, ERC20Event};
+use crate::types::{ContractMethod, SenderAmount, ERC20Event, BlockEvents};
 use crate::payloads::FromTxLog;
 
 
 impl<T: Trait> Module<T> {
-	pub(crate) fn get_block_events(block: u32) -> Result<Vec<ContractMethod>, Error<T>> {
-		let fetched_events = Self::fetch_events(block)?;
+	pub(crate) fn get_block_events(block_number: u32) -> Result<BlockEvents, Error<T>> {
+		let fetched_events = Self::fetch_events(block_number)?;
 
 		debug::info!("Fetched {} events", fetched_events.len());
 		let mut result: Vec<ContractMethod> = vec![];
@@ -57,7 +57,7 @@ impl<T: Trait> Module<T> {
 			amount: Uint::from(10),
 		}));
 
-		Ok(result)
+		Ok(BlockEvents{ block_number, methods: result })
 	}
 
 	fn parse_token_transfer_event(raw_log: RawLog, vault_address: &Address) -> Option<ContractMethod> {
@@ -106,18 +106,22 @@ impl<T: Trait> Module<T> {
 			if let Some(sa) = parse_sender_value_event("DepositETH", raw_log) {
 				Some(ContractMethod::DepositETH(sa))
 			} else { None }
+
 		} else if *topic == get_topic_hash(b"Withdraw(address,uin256)") {
 			if let Some(sa) = parse_sender_value_event("Withdraw", raw_log) {
 				Some(ContractMethod::Withdraw(sa))
 			} else { None }
+
 		} else if *topic == get_topic_hash(b"SwapToToken(address,uin256)") {
 			if let Some(sa) = parse_sender_value_event("SwapToToken", raw_log) {
 				Some(ContractMethod::SwapToToken(sa))
 			} else { None }
+
 		} else if *topic == get_topic_hash(b"SwapToToETH(address,uin256)") {
 			if let Some(sa) = parse_sender_value_event("SwapToETH", raw_log) {
 				Some(ContractMethod::SwapToETH(sa))
 			} else { None }
+
 		} else { None }
 	}
 }

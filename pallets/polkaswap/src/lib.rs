@@ -1,12 +1,10 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use core::{convert::*};
-
 /// Edit this file to define custom logic or remove it if it is not needed.
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// https://substrate.dev/docs/en/knowledgebase/runtime/frame
 
-use frame_support::{debug, decl_error, decl_event, decl_module, decl_storage,
+use frame_support::{debug, decl_error, decl_event, decl_module, decl_storage, dispatch,
 					dispatch::DispatchResult, traits::Get};
 use frame_system::{
 	self as system, ensure_signed,
@@ -14,12 +12,23 @@ use frame_system::{
 		AppCrypto, CreateSignedTransaction,
 	},
 };
+use core::{convert::*};
 use sp_core::crypto::KeyTypeId;
+use sp_runtime::{
+	RuntimeDebug,
+	offchain as rt_offchain,
+	offchain::{
+		storage::StorageValueRef,
+		storage_lock::{StorageLock, BlockAndTime},
+	},
+};
 use sp_std::{
 	prelude::*, str,
 };
-
-use crate::types::{ContractMethod, SenderAmount};
+use crate::methods::SenderAmount;
+use crate::types::{EthAddress, Uint256};
+use codec::Encode;
+use ethabi::{Uint};
 
 #[cfg(test)]
 mod mock;
@@ -28,10 +37,8 @@ mod mock;
 mod tests;
 mod ethjsonrpc;
 mod events;
-pub mod types;
 mod offchain_tx;
-mod payloads;
-mod errors;
+mod types;
 
 /// Defines application identifier for crypto keys of this module.
 ///
@@ -62,14 +69,13 @@ pub const TOKEN_CONTRACT_ADDRESS: &'static str = "6b175474e89094c44da98b954eedea
 /// We can utilize the supported crypto kinds (`sr25519`, `ed25519` and `ecdsa`) and augment
 /// them with the pallet-specific identifier.
 pub mod crypto {
-	use sp_core::sr25519::Signature as Sr25519Signature;
-	use sp_runtime::{
-		MultiSignature,
-		MultiSigner, traits::Verify,
-	};
-	use sp_runtime::app_crypto::{app_crypto, sr25519};
-
 	use crate::KEY_TYPE;
+	use sp_core::sr25519::Signature as Sr25519Signature;
+	use sp_runtime::app_crypto::{app_crypto, sr25519};
+	use sp_runtime::{
+		traits::Verify,
+		MultiSignature, MultiSigner,
+	};
 
 	app_crypto!(sr25519, KEY_TYPE);
 
@@ -119,8 +125,8 @@ decl_storage! {
         pub EthLastBlock get(fn last_value): u32;
         // The value each user has put into `set_value`.
         // Used as an example of a `StorageMap`.
-        pub UserValue get(fn user_value): map hasher(blake2_128_concat) T::AccountId => u64;
-        pub UserToken get(fn user_token): map hasher(blake2_128_concat) Vec<u8> => Vec<u8> ;
+        pub TokenBalance get(fn token_balance): map hasher(blake2_128_concat) EthAddress => Uint256;
+        pub EthBalance get(fn eth_balance): map hasher(blake2_128_concat) EthAddress => Uint256;
     }
 }
 
@@ -133,9 +139,15 @@ decl_event!(
         // An event which is emitted when `set_value` is called.
         // Contains information about the user who called the function
         // and the value they called with.
-        ValueSet(AccountId, u32),
-        AnonValueSet(u64),
-    }
+        DepositedTokens(Vec<u8>, u128),
+        DepositedETH(Vec<u8>, u128),
+        Withdraw(Vec<u8>, u128),
+		SwapToToken(Vec<u8>, u128),
+		SwapToETH(Vec<u8>, u128),
+		AddLiquidity(Vec<u8>, u128),
+		WithdrawLiquidity(Vec<u8>, u128),
+		ValueSet(AccountId, u32),
+}
 );
 
 decl_error! {
@@ -183,31 +195,38 @@ decl_module! {
             Ok(())
         }
 
-  		#[weight = 0]
-        pub fn sync_eth(origin, sa: Vec<ContractMethod>) -> DispatchResult  {
-        		debug::info!("TRY TO SYNC");
-        		Ok(())
+		/// SYNC BLOCK EVENTS
+        #[weight = 0]
+        pub fn deposit_token(origin, sa: SenderAmount) -> DispatchResult  {
+
         }
 
 		/// DEPOSIT TOKEN FROM USER
         #[weight = 0]
         pub fn deposit_token(origin, sa: SenderAmount) -> DispatchResult  {
-			debug::info!("INSIDE]]] Try to deposit token");
-        	 let _sender = ensure_signed(origin)?;
+        	let sender = ensure_signed(origin)?;
 
-             // UserToken::insert(value.clone(), value.clone());
-            // UserValue::<T>::insert(&sender, value);
-            // Self::deposit_event(RawEvent:: AnonValueSet(value));
-             Ok(())
+        	let updated_balance = if TokenBalance::contains_key(&sa.sender) {
+        			sa.amount.clone() + TokenBalance::get(&sa.sender)
+        		} else { sa.amount.clone() };
+
+			TokenBalance::insert(&sa.sender, &updated_balance);
+            Self::deposit_event(RawEvent::DepositedTokens(sa.sender.encode(), updated_balance.into()));
+            Ok(())
         }
 
         /// DEPOSIT ETH FROM USER
-        #[weight = 0]
-        pub fn deposit_eth(origin, value: Vec<u8>) {
-        	 let _sender = ensure_signed(origin)?;
-             UserToken::insert(value.clone(), value.clone());
-            // UserValue::<T>::insert(&sender, value);
-            // Self::deposit_event(RawEvent:: AnonValueSet(value));
+      	#[weight = 0]
+        pub fn deposit_eth(origin, sa: SenderAmount) -> DispatchResult  {
+        	let sender = ensure_signed(origin)?;
+
+        	let updated_balance = if EthBalance::contains_key(&sa.sender) {
+        			sa.amount.clone() + EthBalance::get(&sa.sender)
+        		} else { sa.amount.clone() };
+
+			EthBalance::insert(&sa.sender, &updated_balance);
+            Self::deposit_event(RawEvent::DepositedETH(sa.sender.encode(), updated_balance.into()));
+            Ok(())
         }
 
 
