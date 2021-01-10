@@ -1,109 +1,17 @@
-use core::fmt;
-
-// We use `alt_serde`, and Xanewok-modified `serde_json` so that we can compile the program
-// with serde(features `std`) and alt_serde(features `no_std`).
-use alt_serde::{Deserialize, Serialize};
-use ethabi::Hash;
-use ethereum_types::{Address, H256};
 use frame_support::{debug, traits::Get};
-use hex::encode;
-use sp_runtime::{
-	offchain as rt_offchain,
-};
-use sp_std::fmt::Formatter;
+use sp_runtime::offchain;
 use sp_std::prelude::*;
 use sp_std::str;
 
-use crate::serde_helpers::*;
+// We use `alt_serde`, and Xanewok-modified `serde_json` so that we can compile the program
+// with serde(features `std`) and alt_serde(features `no_std`).
+use alt_serde::{ Serialize};
 
-use super::{Error, Module, Trait};
+use crate::payloads::{EthBlockNumberResponse, JSONRpcRequest, TxLog, EthGetLogsResponse, EthGetLogsRequest};
 
 pub const FETCH_TIMEOUT_PERIOD: u64 = 30000;
+use crate::{Error, Module, Trait};
 
-// Struct for making Ethereum JSON RPC requests
-#[serde(crate = "alt_serde")]
-#[derive(Serialize)]
-struct JSONRpcRequest<T> {
-	jsonrpc: &'static str,
-	method: &'static str,
-	params: T,
-	id: u32,
-}
-
-// Payload for JSON RPCRequest to get the last block of Ethereum network
-#[serde(crate = "alt_serde")]
-#[derive(Deserialize)]
-pub(crate) struct EthBlockNumberResponse {
-	#[serde(deserialize_with = "de_string_to_bytes")]
-	jsonrpc: Vec<u8>,
-
-	id: u32,
-
-	#[serde(deserialize_with = "de_hex_to_u32")]
-	result: u32,
-}
-
-#[serde(crate = "alt_serde")]
-#[derive(Serialize)]
-struct EthGetLogsRequest {
-	// #[serde(serialize_with = "ser_address_to_hex")]
-	// address: Address,
-
-	#[serde(serialize_with = "ser_u32_to_hex")]
-	from_block: u32,
-
-	#[serde(serialize_with = "ser_u32_to_hex")]
-	to_block: u32,
-}
-
-#[serde(crate = "alt_serde")]
-#[derive(Deserialize)]
-pub struct TxLog {
-	#[serde(deserialize_with = "de_hex_to_address")]
-	pub(crate) address: Address,
-
-	#[serde(rename = "blockHash", deserialize_with = "de_hex_to_hash")]
-	block_hash: Hash,
-
-	#[serde(rename = "blockNumber", deserialize_with = "de_hex_to_u32")]
-	block_number: u32,
-
-	#[serde(deserialize_with = "de_hex_to_vec_u8")]
-	pub(crate) data: Vec<u8>,
-
-	#[serde(rename = "logIndex", deserialize_with = "de_hex_to_u32")]
-	log_index: u32,
-
-	removed: bool,
-
-	#[serde(deserialize_with = "decode_hex_hash_seq")]
-	pub(crate) topics: Vec<Hash>,
-
-	#[serde(rename = "transactionHash", deserialize_with = "de_hex_to_hash")]
-	pub(crate) transaction_hash: Hash,
-
-	#[serde(rename = "transactionIndex", deserialize_with = "de_hex_to_u32")]
-	transaction_index: u32,
-}
-
-impl fmt::Display for TxLog {
-	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-		let hex_value = encode(self.address.as_bytes());
-		let result = ["0x", hex_value.as_str()].concat();
-		write!(f, "(from: {})", result.as_str())
-	}
-}
-
-#[serde(crate = "alt_serde")]
-#[derive(Deserialize)]
-pub(crate) struct EthGetLogsResponse {
-	#[serde(deserialize_with = "de_string_to_bytes")]
-	jsonrpc: Vec<u8>,
-
-	id: u32,
-
-	result: Vec<TxLog>,
-}
 
 // ETHEREUM INTERCONNECTION MODULE
 
@@ -127,18 +35,17 @@ impl<T: Trait> Module<T> {
 		Ok(response.result)
 	}
 
-	pub(crate) fn fetch_events(address: &str, from_block: u32, to_block: u32) -> Result<Vec<TxLog>, Error<T>> {
+	pub(crate) fn fetch_events(from_block: u32) -> Result<Vec<TxLog>, Error<T>> {
 		let params = EthGetLogsRequest {
-			// address: Address::from_str(address).expect("Wrong address"),
-			from_block,
-			to_block,
+			from_block: from_block,
+			to_block: from_block+1,
 		};
 
 		debug::info!("Ser:{}", serde_json::to_string(&params).unwrap());
 
 		let resp_bytes = Self::make_rpc_request("eth_getLogs", &[params])
 			.map_err(|e| {
-				debug::error!("cant fetch logs from {} to {} block: {:?}", from_block, to_block, e);
+				debug::error!("cant fetch logs from block: {} {:?}", from_block, e);
 				<Error<T>>::HttpFetchingError
 			})?;
 
@@ -165,11 +72,11 @@ impl<T: Trait> Module<T> {
 		let eth_provider_url = T::EthProviderEndpoint::get();
 
 		let body = vec![body];
-		let request = rt_offchain::http::Request::post(eth_provider_url, body);
+		let request = offchain::http::Request::post(eth_provider_url, body);
 
 		// Keeping the offchain worker execution time reasonable, so limiting the call to be within 3s.
 		let timeout = sp_io::offchain::timestamp()
-			.add(rt_offchain::Duration::from_millis(FETCH_TIMEOUT_PERIOD));
+			.add(offchain::Duration::from_millis(FETCH_TIMEOUT_PERIOD));
 
 		// For github API request, we also need to specify `user-agent` in http request header.
 		// See: https://developer.github.com/v3/#user-agent-required

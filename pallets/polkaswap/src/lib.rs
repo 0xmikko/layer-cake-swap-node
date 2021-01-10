@@ -1,46 +1,39 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use core::{cmp, convert::*};
+
+use codec::Encode;
 /// Edit this file to define custom logic or remove it if it is not needed.
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// https://substrate.dev/docs/en/knowledgebase/runtime/frame
 
-use frame_support::{debug, decl_error, decl_event, decl_module, decl_storage, dispatch,
-					dispatch::DispatchResult, traits::Get};
+use frame_support::{debug, decl_error, decl_event, decl_module, decl_storage,
+					dispatch::{DispatchError, DispatchResult}, traits::Get};
 use frame_system::{
 	self as system, ensure_signed,
 	offchain::{
 		AppCrypto, CreateSignedTransaction,
 	},
 };
-use core::{convert::*};
 use sp_core::crypto::KeyTypeId;
-use sp_runtime::{
-	RuntimeDebug,
-	offchain as rt_offchain,
-	offchain::{
-		storage::StorageValueRef,
-		storage_lock::{StorageLock, BlockAndTime},
-	},
-};
 use sp_std::{
 	prelude::*, str,
 };
-use crate::methods::SenderAmount;
-use crate::types::{EthAddress, Uint256};
-use codec::Encode;
-use ethabi::{Uint};
+
+use crate::types::{BlockEvents, ContractMethod::*, EthAddress, SenderAmount, Uint256};
 
 #[cfg(test)]
 mod mock;
 
 #[cfg(test)]
 mod tests;
-mod ethjsonrpc;
-mod serde_helpers;
-mod events;
-mod methods;
 mod offchain_tx;
 mod types;
+mod errors;
+mod payloads;
+mod contract;
+mod eth_sync;
+mod storage;
 
 /// Defines application identifier for crypto keys of this module.
 ///
@@ -71,13 +64,14 @@ pub const TOKEN_CONTRACT_ADDRESS: &'static str = "6b175474e89094c44da98b954eedea
 /// We can utilize the supported crypto kinds (`sr25519`, `ed25519` and `ecdsa`) and augment
 /// them with the pallet-specific identifier.
 pub mod crypto {
-	use crate::KEY_TYPE;
 	use sp_core::sr25519::Signature as Sr25519Signature;
-	use sp_runtime::app_crypto::{app_crypto, sr25519};
 	use sp_runtime::{
-		traits::Verify,
-		MultiSignature, MultiSigner,
+		MultiSignature,
+		MultiSigner, traits::Verify,
 	};
+	use sp_runtime::app_crypto::{app_crypto, sr25519};
+
+	use crate::KEY_TYPE;
 
 	app_crypto!(sr25519, KEY_TYPE);
 
@@ -122,12 +116,14 @@ decl_storage! {
 	// This name may be updated, but each pallet in the runtime must use a unique name.
 	// ---------------------------------vvvvvvvvvvvvvv
 	 trait Store for Module<T: Trait> as Simple {
-        // The last value passed to `set_value`.
-        // Used as an example of a `StorageValue`.
-        pub EthLastBlock get(fn last_value): u32;
-        // The value each user has put into `set_value`.
-        // Used as an example of a `StorageMap`.
+
+	 	// Last block synced with ethereum
+        pub EthLastSyncedBlock get(fn eth_last_synced_block): u32;
+
+        // Token balance for eth user
         pub TokenBalance get(fn token_balance): map hasher(blake2_128_concat) EthAddress => Uint256;
+
+        // Eth balance for eth user
         pub EthBalance get(fn eth_balance): map hasher(blake2_128_concat) EthAddress => Uint256;
     }
 }
@@ -141,13 +137,15 @@ decl_event!(
         // An event which is emitted when `set_value` is called.
         // Contains information about the user who called the function
         // and the value they called with.
-        DepositedTokens(Vec<u8>, u128),
+        DepositedToken(Vec<u8>, u128),
         DepositedETH(Vec<u8>, u128),
         Withdraw(Vec<u8>, u128),
 		SwapToToken(Vec<u8>, u128),
 		SwapToETH(Vec<u8>, u128),
 		AddLiquidity(Vec<u8>, u128),
 		WithdrawLiquidity(Vec<u8>, u128),
+
+		EthBlockSynced(u32),
 		ValueSet(AccountId, u32),
 }
 );
@@ -185,54 +183,77 @@ decl_module! {
 
      	/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		#[weight = 10_000 + T::DbWeight::get().writes(1)]
-        pub fn set_value(origin, value: u32) -> DispatchResult {
-            let sender = ensure_signed(origin)?;
-            debug::info!("SetValue");
-            EthLastBlock::put(value);
+		// #[weight = 10_000 + T::DbWeight::get().writes(1)]
+        // pub fn set_value(origin, value: u32) -> DispatchResult {
+        //     let sender = ensure_signed(origin)?;
+        //     debug::info!("SetValue");
+        //     EthLastBlock::put(value);
+		//
+        //     // UserValue::<T>::insert(&sender, value);
+        //     // UserToken::insert(3, value);
+        //     Self::deposit_event(RawEvent::ValueSet(sender, value));
+        //     Ok(())
+        // }
 
-            // UserValue::<T>::insert(&sender, value);
-            // UserToken::insert(3, value);
-            Self::deposit_event(RawEvent::ValueSet(sender, value));
-            Ok(())
-        }
-
-		/// DEPOSIT TOKEN FROM USER
+		/// SYNC ETH_BLOCK EVENTS
         #[weight = 0]
-        pub fn deposit_token(origin, sa: SenderAmount) -> DispatchResult  {
-        	let sender = ensure_signed(origin)?;
+        pub fn sync_eth_block(origin, be: BlockEvents) -> DispatchResult  {
+        	debug::info!("{:?}", be);
+        	let block_to_sync = be.block_number;
+        	if block_to_sync > EthLastSyncedBlock::get() {
+				for cmd in be.methods.clone() {
+					match cmd {
 
-        	let updated_balance = if TokenBalance::contains_key(&sa.sender) {
-        			sa.amount.clone() + TokenBalance::get(&sa.sender)
-        		} else { sa.amount.clone() };
+						// Deposit Token Method
+						DepositToken(sa) => {
+							let updated_balance = if TokenBalance::contains_key(&sa.sender) {
+									sa.amount + TokenBalance::get(&sa.sender)
+								} else { sa.amount };
 
-			TokenBalance::insert(&sa.sender, &updated_balance);
-            Self::deposit_event(RawEvent::DepositedTokens(sa.sender.encode(), updated_balance.into()));
-            Ok(())
+							TokenBalance::insert(&sa.sender, &updated_balance);
+							Self::deposit_event(RawEvent::DepositedToken(sa.sender.encode(), updated_balance.into()));
+						}
+
+						// Deposit ETH method
+						DepositETH(sa) => {
+							let updated_balance = if EthBalance::contains_key(&sa.sender) {
+									sa.amount + EthBalance::get(&sa.sender)
+								} else { sa.amount};
+
+							EthBalance::insert(&sa.sender, &updated_balance);
+							Self::deposit_event(RawEvent::DepositedETH(sa.sender.encode(), updated_balance.into()));
+						}
+
+						// Withdraw method
+						Withdraw(sa) => { }
+
+						// Swap to token method <==================================================
+						SwapToToken(sa) => {
+							let user_eth_balance = EthBalance::get(&sa.sender);
+							let eth_to_swap = cmp::min(sa.amount, user_eth_balance);
+
+						}
+						SwapToETH(sa) => {  }
+						AddLiquidity(sa) => {  }
+						WithdrawLiquidity(sa) => {  }
+					}
+				}
+
+				EthLastSyncedBlock::put(block_to_sync);
+				Self::deposit_event(RawEvent::EthBlockSynced(block_to_sync));
+        		Ok(())
+        	} else {
+        		Err(DispatchError::Other("This block is already synced!"))
+        	}
+
+
         }
-
-        /// DEPOSIT ETH FROM USER
-      	#[weight = 0]
-        pub fn deposit_eth(origin, sa: SenderAmount) -> DispatchResult  {
-        	let sender = ensure_signed(origin)?;
-
-        	let updated_balance = if EthBalance::contains_key(&sa.sender) {
-        			sa.amount.clone() + EthBalance::get(&sa.sender)
-        		} else { sa.amount.clone() };
-
-			EthBalance::insert(&sa.sender, &updated_balance);
-            Self::deposit_event(RawEvent::DepositedETH(sa.sender.encode(), updated_balance.into()));
-            Ok(())
-        }
-
-
-
 
         // Offchain worker runs after each block
 		fn offchain_worker(block_number: T::BlockNumber) {
 			debug::info!("Entering off-chain worker");
 			debug::info!("{}", T::EthProviderEndpoint::get());
-			Self::offchain_signed_tx(block_number);
+			Self::offchain_eth_sync(block_number);
 			}
 
     }

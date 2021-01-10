@@ -2,101 +2,37 @@ use frame_system::offchain::{Signer, SendSignedTransaction};
 use frame_support::debug;
 
 use super::{Error, Module, Trait, Call};
-use crate::methods::ContractMethod;
+use sp_runtime::offchain::storage::StorageValueRef;
+use crate::storage::LocalStorage;
+
+const SYNC_DELAY : u32 = 3;
+const LS_LAST_BLOCK_KEY: &[u8] = b"offchain-polkaswap::storage";
 
 impl<T: Trait> Module<T> {
-	pub fn offchain_signed_tx(block_number: T::BlockNumber) -> Result<(), Error<T>> {
+	pub fn offchain_eth_sync(_block_number: T::BlockNumber) -> Result<(), Error<T>> {
 
+		// Getting last block from ethereum network
+		let last_block_eth = Self::get_last_eth_block()?;
 
-		// Translating the current block number to number and submit it on-chain
-		// let number: u64 = block_number.try_into().unwrap_or(0) as u64;
-		let number = Self::get_last_eth_block()?;
+		let last_block_saved = if let Some(lbs) = Self::storage_get_last_block() {
+			lbs
+		} else { last_block_eth - SYNC_DELAY -1 };
 
-		let txs = Self::get_erc20transfer_events("6b175474e89094c44da98b954eedeac495271d0f", number - 3, number)?;
-
-		debug::info!("[Offchain worker]:: Got {} commands!", txs.len());
-
-		// Flag that error happens during sending tx
-		let mut error_occured = false;
-
-
-		// ToDo: Add state to store all commands
-		for cmd in txs {
-			debug::info!("Got results: {}", &cmd);
-			match Self::send_command(cmd) {
-				Ok(_) => {}
-				Err(e) => {
-					debug::error!("Error occured during sending transactions");
-					error_occured = true;
-				}
-			}
+		if last_block_saved >= last_block_eth - SYNC_DELAY {
+			return Ok(());
 		}
 
-		debug::info!("[Offchain worker]::All commands were sent with {} error flag", &error_occured);
+		let current_block = last_block_saved + 1;
 
-		match error_occured {
-			false => {
+		let block_events = Self::get_block_events(current_block)?;
+		debug::info!("{:?}", &block_events);
 
-				debug::info!("[OW]: Ok");
-				Ok(())
-			},
-			true => Err(<Error<T>>::OffchainSignedTxError)
-		}
-	}
 
-	fn send_command(cmd: ContractMethod) -> Result<(), Error<T>> {
-		// We retrieve a signer and check if it is valid.
-		//   Since this pallet only has one key in the keystore. We use `any_account()1 to
-		//   retrieve it. If there are multiple keys and we want to pinpoint it, `with_filter()` can be chained,
-		//   ref: https://substrate.dev/rustdocs/v2.0.0/frame_system/offchain/struct.Signer.html
 		let signer = Signer::<T, T::AuthorityId>::any_account();
-
-		debug::info!("Send command: {}", &cmd);
-
-		// `result` is in the type of `Option<(Account<T>, Result<(), ()>)>`. It is:
-		//   - `None`: no account is available for sending transaction
-		//   - `Some((account, Ok(())))`: transaction is successfully sent
-		//   - `Some((account, Err(())))`: error occured when sending the transaction
-		let result = match cmd {
-			ContractMethod::DepositToken(sa) => {
-				debug::info!("Try to deposit_token in match!");
-				signer.send_signed_transaction(|_acct|
-					// This is the on-chain function
-					Call::deposit_token(sa)
-				)
-			}
-			ContractMethod::DepositETH(sa) => {
-				signer.send_signed_transaction(|_acct|
-					// This is the on-chain function
-					Call::deposit_token(sa.clone())
-				)
-			}
-			ContractMethod::Withdraw(_) => {
-				signer.send_signed_transaction(|_acct|
-					// This is the on-chain function
-					Call::set_value(32u32))
-			}
-			ContractMethod::SwapToToken(_) => {
-				signer.send_signed_transaction(|_acct|
-					// This is the on-chain function
-					Call::set_value(32u32))
-			}
-			ContractMethod::SwapToETH(_) => {
-				signer.send_signed_transaction(|_acct|
-					// This is the on-chain function
-					Call::set_value(32u32))
-			}
-			ContractMethod::AddLiquidity(_) => {
-				signer.send_signed_transaction(|_acct|
-					// This is the on-chain function
-					Call::set_value(32u32))
-			}
-			ContractMethod::WithdrawLiquidity => {
-				signer.send_signed_transaction(|_acct|
-					// This is the on-chain function
-					Call::set_value(32u32))
-			}
-		};
+		let result = signer.send_signed_transaction(|_acct|
+			// This is the on-chain function
+			Call::sync_eth_block(block_events.clone())
+		);
 
 		// Display error if the signed tx fails.
 		if let Some((acc, res)) = result {
@@ -106,11 +42,41 @@ impl<T: Trait> Module<T> {
 			}
 			// Transaction is sent successfully
 			debug::info!("Transaction sent!");
+			Self::storage_set_last_block(current_block);
 			return Ok(());
 		}
 
 		// The case of `None`: no account is available for sending
 		debug::error!("No local account available");
 		Err(<Error<T>>::NoLocalAcctForSigning)
+	}
+
+	fn storage_get_last_block() -> Option<u32> {
+		// Create a reference to Local Storage value.
+		// Since the local storage is common for all offchain workers, it's a good practice
+		// to prepend our entry with the pallet name.
+		let s_info = StorageValueRef::persistent(LS_LAST_BLOCK_KEY);
+
+		// Local storage is persisted and shared between runs of the offchain workers,
+		// offchain workers may run concurrently. We can use the `mutate` function to
+		// write a storage entry in an atomic fashion.
+		//
+		// With a similar API as `StorageValue` with the variables `get`, `set`, `mutate`.
+		// We will likely want to use `mutate` to access
+		// the storage comprehensively.
+		//
+		// Ref: https://substrate.dev/rustdocs/v2.0.0/sp_runtime/offchain/storage/struct.StorageValueRef.html
+		if let Some(Some(ls)) = s_info.get::<u32>() {
+			// gh-info has already been fetched. Return early.
+			debug::info!("last block stored: {:?}", ls);
+			Some(ls)
+		} else {
+			None
+		}
+	}
+
+	fn storage_set_last_block(block_num: u32) {
+		let s_info = StorageValueRef::persistent(LS_LAST_BLOCK_KEY);
+		s_info.set(&block_num);
 	}
 }
