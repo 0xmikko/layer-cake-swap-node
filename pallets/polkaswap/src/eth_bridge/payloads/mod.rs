@@ -1,5 +1,5 @@
 /// ETH_BRIDGE PAYLOADS
-/// This module contains data structures and ser
+/// This module contains entities structures and ser
 pub mod eth_block;
 pub mod serde_helpers;
 pub mod eth_get_logs;

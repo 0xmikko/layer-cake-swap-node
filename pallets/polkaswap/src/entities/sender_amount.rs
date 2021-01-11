@@ -6,7 +6,7 @@ use sp_std::{
 };
 
 use crate::errors::{ConvertError, ConvertError::*};
-use crate::data::{EthAddress, Uint256};
+use crate::entities::{EthAddress, Uint256};
 
 #[derive(Debug, Encode, Decode, Eq, PartialEq, Copy, Clone)]
 pub struct SenderAmount {

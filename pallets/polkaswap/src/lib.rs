@@ -1,12 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use core::{cmp, convert::*};
-
-use codec::Encode;
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// https://substrate.dev/docs/en/knowledgebase/runtime/frame
-
 use frame_support::{debug, decl_error, decl_event, decl_module, decl_storage,
 					dispatch::{DispatchError, DispatchResult}, traits::Get};
 use frame_system::{
@@ -15,12 +8,20 @@ use frame_system::{
 		AppCrypto, CreateSignedTransaction,
 	},
 };
+
+use core::{cmp, convert::*};
+
+use codec::Encode;
+/// Edit this file to define custom logic or remove it if it is not needed.
+/// Learn more about FRAME and the core library of Substrate FRAME pallets:
+/// https://substrate.dev/docs/en/knowledgebase/runtime/frame
+
 use sp_core::crypto::KeyTypeId;
 use sp_std::{
 	prelude::*, str,
 };
 
-use crate::data::{BlockEvents, ContractMethod::*, EthAddress, SenderAmount, Uint256};
+use crate::entities::{BlockEvents, ContractMethod::*, EthAddress, SenderAmount, Uint256};
 
 #[cfg(test)]
 mod mock;
@@ -28,7 +29,7 @@ mod mock;
 #[cfg(test)]
 mod tests;
 mod offchain;
-mod data;
+mod entities;
 mod errors;
 mod eth_bridge;
 
@@ -39,14 +40,13 @@ mod eth_bridge;
 /// When an offchain worker is signing transactions it's going to request keys from type
 /// `KeyTypeId` via the keystore to sign the transaction.
 /// The keys can be inserted manually via RPC (see `author_insertKey`).
-pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"demo");
-pub const NUM_VEC_LEN: usize = 10;
-/// The type to sign and send transactions.
-pub const UNSIGNED_TXS_PRIORITY: u64 = 100;
+pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"plsw");
 
 pub const FETCH_TIMEOUT_PERIOD: u64 = 3000;
+
 // in milli-seconds
 pub const LOCK_TIMEOUT_EXPIRATION: u64 = FETCH_TIMEOUT_PERIOD + 1000;
+
 // in milli-seconds
 pub const LOCK_BLOCK_EXPIRATION: u32 = 3; // in block number
 
@@ -108,14 +108,11 @@ pub trait Trait: system::Trait + CreateSignedTransaction<Call<Self>> {
 	type EthProviderEndpoint: Get<&'static str>;
 }
 
-
-
 // The pallet's runtime storage items.
 // https://substrate.dev/docs/en/knowledgebase/runtime/storage
 decl_storage! {
 	// A unique name is used to ensure that the pallet's storage items are isolated.
 	// This name may be updated, but each pallet in the runtime must use a unique name.
-	// ---------------------------------vvvvvvvvvvvvvv
 	 trait Store for Module<T: Trait> as PolkaSwap {
 
 	 	/// Last block synced with ethereum
@@ -192,24 +189,12 @@ decl_module! {
 	 pub struct Module<T: Trait> for enum Call where origin: T::Origin {
         // A default function for depositing events in our runtime
         fn deposit_event() = default;
-        // const ethProviderEndpoint: &'static str = T::EthProviderEndpoint::get();
-
-     	/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		// #[weight = 10_000 + T::DbWeight::get().writes(1)]
-        // pub fn set_value(origin, value: u32) -> DispatchResult {
-        //     let sender = ensure_signed(origin)?;
-        //     debug::info!("SetValue");
-        //     EthLastBlock::put(value);
-		//
-        //     // UserValue::<T>::insert(&sender, value);
-        //     // UserToken::insert(3, value);
-        //     Self::deposit_event(RawEvent::ValueSet(sender, value));
-        //     Ok(())
-        // }
 
 		/// SYNC ETH_BLOCK EVENTS
-        #[weight = 0]
+		/// It gets Block events entities and update state based on method it contains
+		/// After updating state, it updates EthLastSyncedBlock, writing the last block number
+		/// @returns DispatchResult
+        #[weight = 10_000 + T::DbWeight::get().writes(1)]
         pub fn sync_eth_block(origin, be: BlockEvents) -> DispatchResult  {
         	debug::info!("{:?}", be);
 
@@ -269,15 +254,16 @@ decl_module! {
 				token_liquidity / eth_liquidity
 			}
 
-
-        	/// Get block number of incoming message
+        	// Get block number of incoming message
         	let block_to_sync = be.block_number;
+        	let last_synced_block = EthLastSyncedBlock::get();
 
-        	/// Compare with last synced block on-chain
-        	/// Adding new info only if it's greater, otherwise finish with error
-        	if block_to_sync > EthLastSyncedBlock::get() {
+        	// Compare with last synced block on-chain
+        	// Adding new info only if it's greater, otherwise finish with error
+        	// It allow to update only the next block,
+        	if last_synced_block == 0 || block_to_sync == last_synced_block + 1 {
 
-        		/// Iterate by all commands in block
+        		// Iterate by all commands in block
 				for cmd in be.methods.clone() {
 					match cmd {
 
@@ -341,15 +327,12 @@ decl_module! {
         	} else {
         		Err(DispatchError::Other("This block is already synced!"))
         	}
-
-
         }
 
         // Offchain worker runs after each block
-		fn offchain_worker(block_number: T::BlockNumber) {
-			Self::offchain_eth_sync(block_number);
+		fn offchain_worker(_block_number: T::BlockNumber) {
+			Self::offchain_eth_sync();
 			}
-
     }
 }
 

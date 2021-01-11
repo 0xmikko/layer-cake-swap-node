@@ -9,7 +9,7 @@
 # The cache for docker container dependency
 .cargo
 
-# The cache for chain data in container
+# The cache for chain entities in container
 .local
 /.env
 /.history/

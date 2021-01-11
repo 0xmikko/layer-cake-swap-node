@@ -65,16 +65,16 @@ pub type Balance = u128;
 /// Index of a transaction in the chain.
 pub type Index = u32;
 
-/// A hash of some data used by the chain.
+/// A hash of some entities used by the chain.
 pub type Hash = sp_core::H256;
 
 /// Digest item type.
 pub type DigestItem = generic::DigestItem<Hash>;
 
-/// Opaque data. These are used by the CLI to instantiate machinery that don't need to know
+/// Opaque entities. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
-/// of data like extrinsics, allowing for them to continue syncing the network through upgrades
-/// to even the core data structures.
+/// of entities like extrinsics, allowing for them to continue syncing the network through upgrades
+/// to even the core entities structures.
 pub mod opaque {
 	pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
 
@@ -191,7 +191,7 @@ impl frame_system::Trait for Runtime {
 	type OnNewAccount = ();
 	/// What to do if an account is fully reaped from the system.
 	type OnKilledAccount = ();
-	/// The data to be stored in an account.
+	/// The entities to be stored in an account.
 	type AccountData = pallet_balances::AccountData<Balance>;
 	/// Weight information for the extrinsics of this pallet.
 	type SystemWeightInfo = ();

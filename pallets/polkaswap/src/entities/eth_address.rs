@@ -4,7 +4,6 @@ use frame_support::debug;
 use sp_std::{fmt, prelude::*};
 use sp_std::fmt::{Display, Formatter};
 use sp_std::str::FromStr;
-use hex::encode;
 
 /// EthAddress struct
 /// a wrapper for Address stuct with Encode, Decode traits

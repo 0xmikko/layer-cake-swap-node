@@ -77,7 +77,7 @@ pub fn de_hex_to_hash<'de, D>(de: D) -> Result<Hash, D::Error>
 	Ok(hash)
 }
 
-// Convert data in Hex to Vec<u8>
+// Convert entities in Hex to Vec<u8>
 pub fn de_hex_to_vec_u8<'de, D>(de: D) -> Result<Vec<u8>, D::Error>
 	where D: Deserializer<'de> {
 	let s0x: &str = Deserialize::deserialize(de)?;

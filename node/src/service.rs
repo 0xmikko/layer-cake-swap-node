@@ -201,7 +201,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 		// start the full GRANDPA voter
 		// NOTE: non-authorities could run the GRANDPA observer protocol, but at
 		// this point the full voter should provide better guarantees of block
-		// and vote data availability than the observer. The observer has not
+		// and vote entities availability than the observer. The observer has not
 		// been tested extensively yet and having most nodes in a network run it
 		// could lead to finality stalls.
 		let grandpa_config = sc_finality_grandpa::GrandpaParams {

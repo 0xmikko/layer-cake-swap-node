@@ -76,10 +76,10 @@ impl FromTxLog for RawLog {
 #[serde(crate = "alt_serde")]
 #[derive(Deserialize)]
 pub struct EthGetLogsResponse {
-	#[serde(deserialize_with = "de_string_to_bytes")]
-	jsonrpc: Vec<u8>,
-
-	id: u32,
+	// #[serde(deserialize_with = "de_string_to_bytes")]
+	// jsonrpc: Vec<u8>,
+	//
+	// id: u32,
 
 	pub(crate) result: Vec<TxLog>,
 }

@@ -8,10 +8,10 @@ use super::serde_helpers::*;
 #[serde(crate = "alt_serde")]
 #[derive(Deserialize)]
 pub struct EthBlockNumberResponse {
-	#[serde(deserialize_with = "de_string_to_bytes")]
-	jsonrpc: Vec<u8>,
+	// #[serde(deserialize_with = "de_string_to_bytes")]
+	// jsonrpc: Vec<u8>,
 
-	id: u32,
+	// id: u32,
 
 	#[serde(deserialize_with = "de_hex_to_u32")]
 	pub(crate) result: u32,

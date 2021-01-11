@@ -4,12 +4,15 @@ use frame_support::debug;
 use super::{Error, Module, Trait, Call};
 use sp_runtime::offchain::storage::StorageValueRef;
 
+/// Number of block height (confirmations) to be synced with polkaswap
 const SYNC_DELAY : u32 = 3;
-const LS_LAST_BLOCK_KEY: &[u8] = b"offchain-polkaswap::storage";
+
+/// Key for KV storage to save last synced block
+const LS_LAST_BLOCK_KEY: &[u8] = b"offchain-polkaswap::last_synced_block";
 
 impl<T: Trait> Module<T> {
 	/// Offchain Eth Sync method get the latest info from Ethereum and send tx on-chain
-	pub fn offchain_eth_sync(_block_number: T::BlockNumber) -> Result<(), Error<T>> {
+	pub fn offchain_eth_sync() -> Result<(), Error<T>> {
 
 		// Getting the number of last block from ethereum network
 		let last_block_eth = Self::get_last_eth_block()?;
@@ -59,6 +62,8 @@ impl<T: Trait> Module<T> {
 		Err(<Error<T>>::NoLocalAcctForSigning)
 	}
 
+	/// Get the last block number stored in local storage
+	/// @return Optional value of block number
 	pub fn storage_get_last_block() -> Option<u32> {
 		// Create a reference to Local Storage value.
 		// Since the local storage is common for all offchain workers, it's a good practice
@@ -83,6 +88,7 @@ impl<T: Trait> Module<T> {
 		}
 	}
 
+	/// Stores the last block number stored in local storage
 	pub fn storage_set_last_block(block_num: u32) {
 		let s_info = StorageValueRef::persistent(LS_LAST_BLOCK_KEY);
 		s_info.set(&block_num);

@@ -4,7 +4,7 @@ use core::cmp::{Ord, Ordering};
 
 use ethabi::Uint;
 use sp_std::fmt::{Display, Formatter};
-use sp_std::{fmt, prelude::*, convert::TryFrom};
+use sp_std::{fmt, prelude::*};
 use sp_std::ops::{Add, Sub, Div, Mul};
 use frame_support::traits::IsType;
 use hex::encode;
@@ -20,7 +20,6 @@ impl Encode for Uint256 {
 	fn encode(&self) -> Vec<u8> {
 		let mut res = vec![0; 32];
 		self.0.to_little_endian(res.into_mut());
-		debug::info!("BYTES:{}", encode(&res));
 		res
 	}
 }
@@ -104,8 +103,6 @@ impl Div for Uint256 {
 		(self.0 / rhs.0).into()
 	}
 }
-
-
 
 impl Ord for Uint256 {
 	fn cmp(&self, other: &Self) -> Ordering {
