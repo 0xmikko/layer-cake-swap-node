@@ -1,7 +1,7 @@
 use sp_std::prelude::*;
 use sp_std::fmt::{Debug, Formatter};
 use codec::{Encode, Decode};
-use crate::types::ContractMethod;
+use crate::data::ContractMethod;
 use sp_std::fmt;
 
 #[derive(Eq, Encode, Decode, PartialEq, Clone)]

@@ -7,7 +7,7 @@ use sp_std::str;
 // with serde(features `std`) and alt_serde(features `no_std`).
 use alt_serde::{ Serialize};
 
-use crate::payloads::{EthBlockNumberResponse, JSONRpcRequest, TxLog, EthGetLogsResponse, EthGetLogsRequest};
+use super::payloads::{EthBlockNumberResponse, JSONRpcRequest, TxLog, EthGetLogsResponse, EthGetLogsRequest};
 
 pub const FETCH_TIMEOUT_PERIOD: u64 = 30000;
 use crate::{Error, Module, Trait};

@@ -7,8 +7,8 @@ use sp_std::prelude::*;
 use sp_std::str::FromStr;
 
 use crate::{TOKEN_CONTRACT_ADDRESS, VAULT_CONTRACT_ADDRESS};
-use crate::payloads::FromTxLog;
-use crate::types::{BlockEvents, ContractMethod, ERC20Event, EthAddress, SenderAmount, Uint256};
+use super::payloads::{FromTxLog, ERC20Event};
+use crate::data::{BlockEvents, ContractMethod, EthAddress, SenderAmount, Uint256};
 
 use crate::{Error, Module, Trait};
 

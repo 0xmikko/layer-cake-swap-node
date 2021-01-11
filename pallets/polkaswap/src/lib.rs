@@ -20,19 +20,17 @@ use sp_std::{
 	prelude::*, str,
 };
 
-use crate::types::{BlockEvents, ContractMethod::*, EthAddress, SenderAmount, Uint256};
+use crate::data::{BlockEvents, ContractMethod::*, EthAddress, SenderAmount, Uint256};
 
 #[cfg(test)]
 mod mock;
 
 #[cfg(test)]
 mod tests;
-mod offchain_tx;
-mod types;
+mod offchain;
+mod data;
 mod errors;
-mod payloads;
-mod contract;
-mod eth_sync;
+mod eth_bridge;
 
 /// Defines application identifier for crypto keys of this module.
 ///
@@ -173,7 +171,7 @@ decl_error! {
 		// Error returned when making unsigned transactions in off-chain worker
 		OffchainUnsignedTxError,
 
-		// Error returned when making unsigned transactions with signed payloads in off-chain worker
+		// Error returned when making unsigned transactions with signed eth_bridge.payloads in off-chain worker
 		OffchainUnsignedTxSignedPayloadError,
 
 		// Error returned when fetching github info
