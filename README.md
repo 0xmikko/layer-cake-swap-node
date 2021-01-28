@@ -12,7 +12,8 @@ movement all calculations & storage operations to L2 networks (Polkadot, Substra
 
 ![advanages](https://user-images.githubusercontent.com/26343374/106137793-4405c580-617c-11eb-8b6c-59190649bbe8.png)
 
-This version implements business logic for trading a pair ETH - ERC20 Token. Ethereum contract & frontend is located at https://github.com/MikaelLazarev/layer-cake-swap-client/    
+This version implements business logic for trading a pair ETH - ERC20 Token. Ethereum contract & frontend is located at https://github.com/MikaelLazarev/layer-cake-swap-client/
+
 This project was developed for Encode Hackathon'2021. 
 
 ### Gas consumption comparison
@@ -27,6 +28,7 @@ This project was developed for Encode Hackathon'2021.
 | Withdraw token               | -           |  no data yet  |
 
 <sup>[1](#myfootnote1)</sup> for swap operation. UniSwap gas consumption was measured for ETH/DAI pair.
+
 <sup>[2](#myfootnote1)</sup> - gas for UniSwap was measured for ETH/DAI Swap
 
 ## How it works
