@@ -1,4 +1,4 @@
-![title](https://user-images.githubusercontent.com/26343374/106135940-a01b1a80-6179-11eb-956c-e6139f634973.png)
+![title_white](https://user-images.githubusercontent.com/26343374/106140220-87adfe80-617f-11eb-9524-f67dc3069ef1.png)
 ## LayerCakeSwap
 
 LayerCakeSwap is a DEX protocol which consumes 7 times less gas<sup>1</sup> in comparison with UniSwap, based on L2 network.
@@ -96,7 +96,7 @@ REACT_APP_CHAIN_ID=1337
 WEB3PROVIDER=http://localhost:8545
 ```
 7. Go to `polkaswap` pallet directory (it's former name of layer-cake-swap project): `cd pallets/polkaswap/src`
-8. Open `lib.rs` file and insert vault contract address & token address there withot `0x` prefix:
+8. Open `lib.rs` file and insert vault contract address & token address there without `0x` prefix:
 ```rust
 /// Vault contract address
 pub const VAULT_CONTRACT_ADDRESS: &'static str = "e7f1725E7734CE288F8367e1Bb143E90bb3F0512";
@@ -107,7 +107,10 @@ pub const TOKEN_CONTRACT_ADDRESS: &'static str = "5FbDB2315678afecb367f032d93F64
 ```
 9. Return to root directory and run substrate node in dev mode: `make dev`
 
-## 
+## Contributing
+When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
+
+
 
 ## Disclaimer
 
