@@ -7,13 +7,13 @@ the problem of
 - High gas rates make DeFi expensive for users  ~$12-18 USD per swap
 - Users prefer and trust Ethereum and aren’t willing to use side chains solutions (like Binance Smart Chain, POA, etc.) for DeFi
 
-![advanages](https://user-images.githubusercontent.com/26343374/106137793-4405c580-617c-11eb-8b6c-59190649bbe8.png)
-
 Users interact with LayerCakeSwap via familiar Ethereum interface with no additional setup. Such gas efficiency comes from 
 movement all calculations & storage operations to L2 networks (Polkadot, Substrate).
 
-This project was developed for Encode Hackathon'2021. This version supports business logic for a trade pair ETH - ERC20 Token.
+![advanages](https://user-images.githubusercontent.com/26343374/106137793-4405c580-617c-11eb-8b6c-59190649bbe8.png)
 
+This version implements business logic for trading a pair ETH - ERC20 Token. Ethereum contract & frontend is located at https://github.com/MikaelLazarev/layer-cake-swap-client/    
+This project was developed for Encode Hackathon'2021. 
 
 ### Gas consumption comparison
 | Operation                    | UniSwap     | LayerCakeSwap |
@@ -28,11 +28,6 @@ This project was developed for Encode Hackathon'2021. This version supports busi
 
 <sup>[1](#myfootnote1)</sup> for swap operation. UniSwap gas consumption was measured for ETH/DAI pair.
 <sup>[2](#myfootnote1)</sup> - gas for UniSwap was measured for ETH/DAI Swap
-
-## Getting Started
-
-Ethereum contract & frontend is located at https://github.com/MikaelLazarev/layer-cake-swap-client/  
-This project contains some configuration files to help get started :hammer_and_wrench:
 
 ## How it works
 
@@ -60,8 +55,9 @@ Legend
 
 ![legend](https://user-images.githubusercontent.com/26343374/106128944-e15afc80-6170-11eb-9880-5fc25f9e3fe6.png)
 
-
 ## How to install (dev mode)
+
+This project contains some configuration files to help get started :hammer_and_wrench:
 
 ### Rust Setup
 
