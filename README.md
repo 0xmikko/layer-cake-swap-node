@@ -1,4 +1,4 @@
-![title_white](https://user-images.githubusercontent.com/26343374/106140220-87adfe80-617f-11eb-9524-f67dc3069ef1.png)
+![title_white](https://user-images.githubusercontent.com/26343374/106140486-e5dae180-617f-11eb-86e9-cb4204589d6c.png)
 ## LayerCakeSwap
 
 LayerCakeSwap is a DEX protocol which consumes 7 times less gas<sup>1</sup> in comparison with UniSwap, based on L2 network.
