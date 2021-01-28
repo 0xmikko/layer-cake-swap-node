@@ -1,14 +1,16 @@
 ![title](https://user-images.githubusercontent.com/26343374/106135940-a01b1a80-6179-11eb-956c-e6139f634973.png)
 ## LayerCakeSwap
 
-LayerCakeSwap is a DEX protocol which consumes 7 times less gas<sup>1</sup> in comparison with UniSwap, based on L2 network. It solves 
-the problem of 
+LayerCakeSwap is a DEX protocol which consumes 7 times less gas<sup>1</sup> in comparison with UniSwap, based on L2 network.
+It solves following problems: 
 
-- High gas rates make DeFi expensive for users  ~$12-18 USD per swap
-- Users prefer and trust Ethereum and aren’t willing to use side chains solutions (like Binance Smart Chain, POA, etc.) for DeFi
+- High gas rates make DeFi expensive for users  ~$12-18 USD per swap (@ 1,000 USD/Eth)
+- DeFi users prefer and trust Ethereum and aren’t willing to migrate to side chains solutions (like Binance Smart Chain, POA, etc.) for gas efficiency
 
-Users interact with LayerCakeSwap via familiar Ethereum interface with no additional setup. Such gas efficiency comes from 
-movement all calculations & storage operations to L2 networks (Polkadot, Substrate).
+Users interact with LayerCakeSwap smart contract on Ethereum using familiar interface, no additional setup required. 
+Evenmore, LayerCakeSwap contract API is accessible for other smart contract on Ethereum. Smart contract emits events to 
+manage operations on L2 network based on Polkadot (Substrate). Gas efficiency comes from executing calculations & 
+data storage on L2 network.
 
 ![advanages](https://user-images.githubusercontent.com/26343374/106137793-4405c580-617c-11eb-8b6c-59190649bbe8.png)
 
