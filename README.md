@@ -2,8 +2,13 @@
 
 DEX protocol that consumes 5 times less gas in comparison with UniSwap, based on L2 network  :rocket:
 
+![LCSwap 004](https://user-images.githubusercontent.com/26343374/106123586-2714c680-616b-11eb-8c19-f58e01ff75bb.jpeg)
+
+This project was developed for Encode Hackathon'2021.
+
 ## Getting Started
 
+Ethereum contract & frontend is located at https://github.com/MikaelLazarev/layer-cake-swap-client/  
 This project contains some configuration files to help get started :hammer_and_wrench:
 
 ### Rust Setup
@@ -15,6 +20,7 @@ steps to install [`rustup`](https://rustup.rs/) and configure the Rust toolchain
 latest stable version.
 
 ### Configuration
+
 
 
 ### Makefile
