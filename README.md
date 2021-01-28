@@ -8,8 +8,9 @@ It solves following problems:
 - DeFi users prefer and trust Ethereum and aren’t willing to migrate to side chains solutions (like Binance Smart Chain, POA, etc.) for gas efficiency
 
 Users interact with LayerCakeSwap smart contract on Ethereum using familiar interface, no additional setup required. 
-Evenmore, LayerCakeSwap contract API is accessible for other smart contract on Ethereum. Smart contract emits events to 
-manage operations on L2 network based on Polkadot (Substrate). Gas efficiency comes from executing calculations & 
+Even more, LayerCakeSwap contract API is accessible for other smart contract on Ethereum. 
+
+Smart contract emits events to manage operations on L2 network based on Polkadot (Substrate). Gas efficiency comes from executing calculations & 
 data storage on L2 network.
 
 ![advanages](https://user-images.githubusercontent.com/26343374/106137793-4405c580-617c-11eb-8b6c-59190649bbe8.png)
