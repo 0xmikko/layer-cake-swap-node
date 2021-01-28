@@ -12,6 +12,7 @@ use super::sender_amount::SenderAmount;
 pub enum ContractMethod {
 	DepositToken(SenderAmount),
 	DepositETH(SenderAmount),
+	WithdrawETH(SenderAmount),
 	WithdrawToken(SenderAmount),
 	SwapToToken(SenderAmount),
 	SwapToETH(SenderAmount),
@@ -24,11 +25,12 @@ impl Encode for ContractMethod {
 		match self {
 			ContractMethod::DepositToken(sa) => { ContractMethod::encode_item(0u8, sa) }
 			ContractMethod::DepositETH(sa) => { ContractMethod::encode_item(1u8, sa) }
-			ContractMethod::WithdrawToken(sa) => { ContractMethod::encode_item(2u8, sa) }
-			ContractMethod::SwapToToken(sa) => { ContractMethod::encode_item(3u8, sa) }
-			ContractMethod::SwapToETH(sa) => { ContractMethod::encode_item(4u8, sa) }
-			ContractMethod::AddLiquidity(sa) => { ContractMethod::encode_item(5u8, sa) }
-			ContractMethod::WithdrawLiquidity(sa) => { ContractMethod::encode_item(6u8, sa) }
+			ContractMethod::WithdrawETH(sa) => { ContractMethod::encode_item(2u8, sa) }
+			ContractMethod::WithdrawToken(sa) => { ContractMethod::encode_item(3u8, sa) }
+			ContractMethod::SwapToToken(sa) => { ContractMethod::encode_item(4u8, sa) }
+			ContractMethod::SwapToETH(sa) => { ContractMethod::encode_item(5u8, sa) }
+			ContractMethod::AddLiquidity(sa) => { ContractMethod::encode_item(6u8, sa) }
+			ContractMethod::WithdrawLiquidity(sa) => { ContractMethod::encode_item(7u8, sa) }
 		}
 	}
 }
@@ -40,11 +42,12 @@ impl Decode for ContractMethod {
 		match cm_type {
 			0u8 => Ok(ContractMethod::DepositToken(sa)),
 			1u8 => Ok(ContractMethod::DepositETH(sa)),
-			2u8 => Ok(ContractMethod::WithdrawToken(sa)),
-			3u8 => Ok(ContractMethod::SwapToToken(sa)),
-			4u8 => Ok(ContractMethod::SwapToETH(sa)),
-			5u8 => Ok(ContractMethod::AddLiquidity(sa)),
-			6u8 => Ok(ContractMethod::WithdrawLiquidity(sa)),
+			2u8 => Ok(ContractMethod::WithdrawETH(sa)),
+			3u8 => Ok(ContractMethod::WithdrawToken(sa)),
+			4u8 => Ok(ContractMethod::SwapToToken(sa)),
+			5u8 => Ok(ContractMethod::SwapToETH(sa)),
+			6u8 => Ok(ContractMethod::AddLiquidity(sa)),
+			7u8 => Ok(ContractMethod::WithdrawLiquidity(sa)),
 			_ => { Err(Error::from("Unknown contract method type"))}
 		}
 	}
@@ -78,8 +81,12 @@ impl Display for ContractMethod {
 				write!(f, "[Deposit ETH]: from: {}, amount: {}", dm.sender, dm.amount)
 			}
 
+			ContractMethod::WithdrawETH(dm) => {
+				write!(f, "[Withdraw ETH]: from: {}, amount: {}", dm.sender, dm.amount)
+			}
+
 			ContractMethod::WithdrawToken(dm) => {
-				write!(f, "[Withdraw]: from: {}, amount: {}", dm.sender, dm.amount)
+				write!(f, "[Withdraw Token]: from: {}, amount: {}", dm.sender, dm.amount)
 			}
 
 			ContractMethod::SwapToToken(dm) => {

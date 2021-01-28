@@ -18,12 +18,17 @@ impl TryFrom<Log> for SenderAmount {
 	type Error = ConvertError;
 
 	fn try_from(value: Log) -> Result<SenderAmount, Self::Error> {
+
+		if value.params.len() != 2 {
+			return Err(CantConvertFrom)
+		}
+		
 		let sender = match value.params[0].value {
 			Token::Address(addr) => addr,
 			_ => return Err(CantConvertFrom)
 		};
 
-		let amount = match value.params[2].value {
+		let amount = match value.params[1].value {
 			Token::Uint(v) => v,
 			_ => return Err(CantConvertAmount)
 		};

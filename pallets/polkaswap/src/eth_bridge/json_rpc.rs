@@ -53,7 +53,7 @@ impl<T: Trait> Module<T> {
 		let resp_str = str::from_utf8(&resp_bytes)
 			.map_err(|_| <Error<T>>::EventParsingError)?;
 
-		// debug::info!("Eth logs response: {}", resp_str);
+		debug::info!("Eth logs response: {}", resp_str);
 		let response: EthGetLogsResponse = serde_json::from_str(resp_str).unwrap();
 		Ok(response.result)
 	}

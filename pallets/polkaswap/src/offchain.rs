@@ -17,6 +17,8 @@ impl<T: Trait> Module<T> {
 		// Getting the number of last block from ethereum network
 		let last_block_eth = Self::get_last_eth_block()?;
 
+		debug::info!("Last block:{}", &last_block_eth);
+
 		// Getting last saved blocknumber in local storage
 		// If there is no info, we set it as the closest block which should be updated
 		let last_block_saved = if let Some(lbs) = Self::storage_get_last_block() {

@@ -51,11 +51,11 @@ pub const LOCK_TIMEOUT_EXPIRATION: u64 = FETCH_TIMEOUT_PERIOD + 1000;
 pub const LOCK_BLOCK_EXPIRATION: u32 = 3; // in block number
 
 /// Vault contract address
-pub const VAULT_CONTRACT_ADDRESS: &'static str = "6b175484e89094c44da98b954eedeac495271d0f";
+pub const VAULT_CONTRACT_ADDRESS: &'static str = "e7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 /// Token contract agaist Eth erc20 contract address
 /// DAI on our case
-pub const TOKEN_CONTRACT_ADDRESS: &'static str = "6b175474e89094c44da98b954eedeac495271d0f";
+pub const TOKEN_CONTRACT_ADDRESS: &'static str = "5FbDB2315678afecb367f032d93F642f64180aa3";
 
 /// Initial ratio for token to ETH
 /// Used at first withdraw
@@ -202,6 +202,7 @@ decl_module! {
 			/// ==================== ::CONTRACT FUNCTIONS:: ==========================
 			/// Deposit token for user
         	fn deposit_token(sa: SenderAmount) -> Result<SenderAmount, ContractError>{
+				debug::info!("deposit_token: {:?}", sa);
 				let updated_balance = if TokenBalance::contains_key(&sa.sender) {
 						sa.amount + TokenBalance::get(&sa.sender)
 					} else { sa.amount };
@@ -213,6 +214,7 @@ decl_module! {
 
 			/// Deposit Eth for user
 			fn deposit_eth(sa: SenderAmount) -> Result<SenderAmount, ContractError> {
+				debug::info!("deposit_eth: {:?}", sa);
 				let updated_balance = if EthBalance::contains_key(&sa.sender) {
 									sa.amount + EthBalance::get(&sa.sender)
 								} else { sa.amount};
@@ -237,11 +239,32 @@ decl_module! {
 				}
 			}
 
+			/// Withdraw function
+			/// @return SenderAmount with real numbers to be withdrawn, else ContractError
+			fn withdraw_eth(sa: SenderAmount) -> Result<SenderAmount, ContractError> {
+				if EthBalance::contains_key(&sa.sender) {
+					return Err(ContractError("User not found"));
+				}
+				let amount = get_min_user_eth_balance(&sa);
+				if amount.clone() > Uint256::from(0)  {
+					let updated_balance = EthBalance::get(&sa.sender) - amount;
+					EthBalance::insert(&sa.sender, &updated_balance);
+					Ok(SenderAmount{ sender: sa.sender, amount: updated_balance })
+				} else {
+					Err(ContractError("Nothing to with"))
+				}
+			}
+
 
 			/// ==================== ::CONTRACT HELPERS:: ==========================
 			fn get_min_user_token_balance(sa: &SenderAmount) -> Uint256 {
 				let user_token_balance = TokenBalance::get(&sa.sender);
 				cmp::min(sa.amount, user_token_balance)
+			}
+
+			fn get_min_user_eth_balance(sa: &SenderAmount) -> Uint256 {
+				let user_eth_balance = EthBalance::get(&sa.sender);
+				cmp::min(sa.amount, user_eth_balance)
 			}
 
 			fn get_ratio() -> Uint256 {
@@ -290,6 +313,19 @@ decl_module! {
 								}
 							}
 						}
+
+						// Withdraw method
+						WithdrawETH(sa) => {
+							match withdraw_eth(sa) {
+									Ok(res) => {
+										Self::deposit_event(RawEvent::WithdrawToken(res.sender.encode(), res.amount.into()));
+									}
+									Err(err) => {
+										debug::error!("Can deposit event: {}", err.0);
+										Self::deposit_event(RawEvent::WithdrawTokenError(err.0.encode()))
+									}
+								}
+							 }
 
 						// Withdraw method
 						WithdrawToken(sa) => {
