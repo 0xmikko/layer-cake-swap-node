@@ -11,6 +11,48 @@ This project was developed for Encode Hackathon'2021.
 Ethereum contract & frontend is located at https://github.com/MikaelLazarev/layer-cake-swap-client/  
 This project contains some configuration files to help get started :hammer_and_wrench:
 
+## Solution
+
+### Problem
+
+- High gas rates make DeFi expensive for users  ~$12-18 USD per swap
+- Users prefer and trust Ethereum and aren’t willing to use side chains solutions (like Binance Smart Chain, POA, etc.) for DeFi
+
+### Solution
+
+LayerCakeSwap combines Ethereum interface with no additional setup for end users with gas efficinet operations on L2 (Polkadot, Substrate).
+
+This version supports business logic for a trade pair ETH - ERC20 Token. 
+
+### How it works
+
+![how_it_works](https://user-images.githubusercontent.com/26343374/106125934-cf2b8f00-616d-11eb-8874-2ae3d08ccf6b.png)
+
+1. User interacts with smart contract on Ethereum network as usual
+2. Contract processes method and emits an event
+3. LCSwap listens to events and execute orders on L2
+
+### Supported operations:
+
+Deposit assets (Ethereum / Token)
+
+![deposit_process](https://user-images.githubusercontent.com/26343374/106126399-5f69d400-616e-11eb-9d63-7e2360e5da49.png)
+
+Orders (Swap, Liquidity pool management)
+
+![order_process](https://user-images.githubusercontent.com/26343374/106126526-845e4700-616e-11eb-89be-752d8ea2f472.png)
+
+Withdraw process
+
+![withdraw_process](https://user-images.githubusercontent.com/26343374/106127954-08fd9500-6170-11eb-891a-550223ceb0b3.png)
+
+Legend
+
+![legend](https://user-images.githubusercontent.com/26343374/106128944-e15afc80-6170-11eb-9880-5fc25f9e3fe6.png)
+
+
+## How to install (dev mode)
+
 ### Rust Setup
 
 Setup instructions for working with the [Rust](https://www.rust-lang.org/) programming language can
@@ -19,185 +61,38 @@ be found at the
 steps to install [`rustup`](https://rustup.rs/) and configure the Rust toolchain to default to the
 latest stable version.
 
-### Configuration
+### Clone contract repo & deploy ethereum smartcontract
 
+1. Clone contracts repo: `git clone https://github.com/MikaelLazarev/layer-cake-swap-client/`
+2. Run hardhat blockchain: `npx hardhat node`. Do not close this tab, hardhat node should work in background
+3. Deploy smartcontract: `yarn deploy-local`
+4. Run frontend: `yarn start`
 
+### Clone Substrate node repo & config it
 
-### Makefile
-
-This project uses a [Makefile](Makefile) to document helpful commands and make it easier to execute
-them. Get started by running these [`make`](https://www.gnu.org/software/make/manual/make.html)
-targets:
-
-1. `make dev` - Run the [init script](scripts/init.sh) to configure the Rust toolchain for
-   [WebAssembly compilation](https://substrate.dev/docs/en/knowledgebase/getting-started/#webassembly-compilation).
-1. `make run` - Build and launch this project in development mode.
-
-The init script and Makefile both specify the version of the
-[Rust nightly compiler](https://substrate.dev/docs/en/knowledgebase/getting-started/#rust-nightly-toolchain)
-that this project depends on.
-
-### Build
-
-The `make run` command will perform an initial build. Use the following command to build the node
-without launching it:
-
-```sh
-make build
+1. Clone this repo: `git clone git@github.com:MikaelLazarev/layer-cake-swap-node.git`
+2. Go to `src` folder in your frontend folder and open `env.local` file.
+3. It would contain something like that:
 ```
-
-### Embedded Docs
-
-Once the project has been built, the following command can be used to explore all parameters and
-subcommands:
-
-```sh
-./target/release/node-template -h
+REACT_APP_BACKEND_ADDR=http://localhost:8000
+REACT_APP_VAULT_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+REACT_APP_TOKEN_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+REACT_APP_CHAIN_ID=1337
 ```
-
-## Run
-
-The `make run` command will launch a temporary node and its state will be discarded after you
-terminate the process. After the project has been built, there are other ways to launch the node.
-
-### Single-Node Development Chain
-
-This command will start the single-node development chain with persistent state:
-
-```bash
-./target/release/node-template --dev
+4. Copy `REACT_APP_VAULT_ADDRESS` and `REACT_APP_TOKEN_ADDRESS`, we will need them to configure substrate node.
+5. Go back to Substrate node directory
+6. Copy `.env_example` to `.env` file and set web3 provider. For dev pruposes it would be hardhat address:
 ```
-
-Purge the development chain's state:
-
-```bash
-./target/release/node-template purge-chain --dev
+WEB3PROVIDER=http://localhost:8545
 ```
+7. Go to `polkaswap` pallet directory (it's former name of layer-cake-swap project): `cd pallets/polkaswap/src`
+8. Open `lib.rs` file and insert vault contract address & token address there withot `0x` prefix:
+```rust
+/// Vault contract address
+pub const VAULT_CONTRACT_ADDRESS: &'static str = "e7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
-Start the development chain with detailed logging:
-
-```bash
-RUST_LOG=debug RUST_BACKTRACE=1 ./target/release/node-template -lruntime=debug --dev
+/// Token contract agaist Eth erc20 contract address
+/// DAI on our case
+pub const TOKEN_CONTRACT_ADDRESS: &'static str = "5FbDB2315678afecb367f032d93F642f64180aa3";
 ```
-
-### Multi-Node Local Testnet
-
-If you want to see the multi-node consensus algorithm in action, refer to
-[our Start a Private Network tutorial](https://substrate.dev/docs/en/tutorials/start-a-private-network/).
-
-## Template Structure
-
-A Substrate project such as this consists of a number of components that are spread across a few
-directories.
-
-### Node
-
-A blockchain node is an application that allows users to participate in a blockchain network.
-Substrate-based blockchain nodes expose a number of capabilities:
-
--   Networking: Substrate nodes use the [`libp2p`](https://libp2p.io/) networking stack to allow the
-    nodes in the network to communicate with one another.
--   Consensus: Blockchains must have a way to come to
-    [consensus](https://substrate.dev/docs/en/knowledgebase/advanced/consensus) on the state of the
-    network. Substrate makes it possible to supply custom consensus engines and also ships with
-    several consensus mechanisms that have been built on top of
-    [Web3 Foundation research](https://research.web3.foundation/en/latest/polkadot/NPoS/index.html).
--   RPC Server: A remote procedure call (RPC) server is used to interact with Substrate nodes.
-
-There are several files in the `node` directory - take special note of the following:
-
--   [`chain_spec.rs`](./node/src/chain_spec.rs): A
-    [chain specification](https://substrate.dev/docs/en/knowledgebase/integrate/chain-spec) is a
-    source code file that defines a Substrate chain's initial (genesis) state. Chain specifications
-    are useful for development and testing, and critical when architecting the launch of a
-    production chain. Take note of the `development_config` and `testnet_genesis` functions, which
-    are used to define the genesis state for the local development chain configuration. These
-    functions identify some
-    [well-known accounts](https://substrate.dev/docs/en/knowledgebase/integrate/subkey#well-known-keys)
-    and use them to configure the blockchain's initial state.
--   [`service.rs`](./node/src/service.rs): This file defines the node implementation. Take note of
-    the libraries that this file imports and the names of the functions it invokes. In particular,
-    there are references to consensus-related topics, such as the
-    [longest chain rule](https://substrate.dev/docs/en/knowledgebase/advanced/consensus#longest-chain-rule),
-    the [Aura](https://substrate.dev/docs/en/knowledgebase/advanced/consensus#aura) block authoring
-    mechanism and the
-    [GRANDPA](https://substrate.dev/docs/en/knowledgebase/advanced/consensus#grandpa) finality
-    gadget.
-
-After the node has been [built](#build), refer to the embedded documentation to learn more about the
-capabilities and configuration parameters that it exposes:
-
-```shell
-./target/release/node-template --help
-```
-
-### Runtime
-
-In Substrate, the terms
-"[runtime](https://substrate.dev/docs/en/knowledgebase/getting-started/glossary#runtime)" and
-"[state transition function](https://substrate.dev/docs/en/knowledgebase/getting-started/glossary#stf-state-transition-function)"
-are analogous - they refer to the core logic of the blockchain that is responsible for validating
-blocks and executing the state changes they define. The Substrate project in this repository uses
-the [FRAME](https://substrate.dev/docs/en/knowledgebase/runtime/frame) framework to construct a
-blockchain runtime. FRAME allows runtime developers to declare domain-specific logic in modules
-called "pallets". At the heart of FRAME is a helpful
-[macro language](https://substrate.dev/docs/en/knowledgebase/runtime/macros) that makes it easy to
-create pallets and flexibly compose them to create blockchains that can address
-[a variety of needs](https://www.substrate.io/substrate-users/).
-
-Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this template and note
-the following:
-
--   This file configures several pallets to include in the runtime. Each pallet configuration is
-    defined by a code block that begins with `impl $PALLET_NAME::Trait for Runtime`.
--   The pallets are composed into a single runtime by way of the
-    [`construct_runtime!`](https://crates.parity.io/frame_support/macro.construct_runtime.html)
-    macro, which is part of the core
-    [FRAME Support](https://substrate.dev/docs/en/knowledgebase/runtime/frame#support-library)
-    library.
-
-### Pallets
-
-The runtime in this project is constructed using many FRAME pallets that ship with the
-[core Substrate repository](https://github.com/paritytech/substrate/tree/master/frame) and a
-template pallet that is [defined in the `pallets`](./pallets/template/src/lib.rs) directory.
-
-A FRAME pallet is compromised of a number of blockchain primitives:
-
--   Storage: FRAME defines a rich set of powerful
-    [storage abstractions](https://substrate.dev/docs/en/knowledgebase/runtime/storage) that makes
-    it easy to use Substrate's efficient key-value database to manage the evolving state of a
-    blockchain.
--   Dispatchables: FRAME pallets define special types of functions that can be invoked (dispatched)
-    from outside of the runtime in order to update its state.
--   Events: Substrate uses [events](https://substrate.dev/docs/en/knowledgebase/runtime/events) to
-    notify users of important changes in the runtime.
--   Errors: When a dispatchable fails, it returns an error.
--   Trait: The `Trait` configuration interface is used to define the types and parameters upon which
-    a FRAME pallet depends.
-
-### Run in Docker
-
-First, install [Docker](https://docs.docker.com/get-docker/) and
-[Docker Compose](https://docs.docker.com/compose/install/).
-
-Then run the following command to start a single node development chain.
-
-```bash
-./scripts/docker_run.sh
-```
-
-This command will firstly compile your code, and then start a local development network. You can
-also replace the default command (`cargo build --release && ./target/release/node-template --dev --ws-external`)
-by appending your own. A few useful ones are as follow.
-
-```bash
-# Run Substrate node without re-compiling
-./scripts/docker_run.sh ./target/release/node-template --dev --ws-external
-
-# Purge the local dev chain
-./scripts/docker_run.sh ./target/release/node-template purge-chain --dev
-
-# Check whether the code is compilable
-./scripts/docker_run.sh cargo check
-```
+9. Return to root directory and run substrate node in dev mode: `make dev`
