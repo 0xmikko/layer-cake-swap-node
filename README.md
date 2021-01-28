@@ -1,8 +1,7 @@
-# LayerCakeSwap
+![title](https://user-images.githubusercontent.com/26343374/106135940-a01b1a80-6179-11eb-956c-e6139f634973.png)
+## LayerCakeSwap
 
 DEX protocol that consumes 7 times less gas<sup>1</sup> in comparison with UniSwap, based on L2 network  :rocket:
-
-![LCSwap 004](https://user-images.githubusercontent.com/26343374/106123586-2714c680-616b-11eb-8c19-f58e01ff75bb.jpeg)
 
 This project was developed for Encode Hackathon'2021.
 
@@ -39,7 +38,7 @@ This version supports business logic for a trade pair ETH - ERC20 Token.
 
 <sup>[2](#myfootnote1)</sup> - gas for UniSwap was measured for ETH/DAI Swap
 
-### How it works
+## How it works
 
 ![how_it_works](https://user-images.githubusercontent.com/26343374/106125934-cf2b8f00-616d-11eb-8874-2ae3d08ccf6b.png)
 
@@ -111,3 +110,15 @@ pub const VAULT_CONTRACT_ADDRESS: &'static str = "e7f1725E7734CE288F8367e1Bb143E
 pub const TOKEN_CONTRACT_ADDRESS: &'static str = "5FbDB2315678afecb367f032d93F642f64180aa3";
 ```
 9. Return to root directory and run substrate node in dev mode: `make dev`
+
+## 
+
+## Disclaimer
+
+This application is provided "as is" and "with all faults." Me as developer makes no representations or 
+warranties of any kind concerning the safety, suitability, lack of viruses, inaccuracies, typographical 
+errors, or other harmful components of this software. There are inherent dangers in the use of any software, 
+and you are solely responsible for determining whether this software product is compatible with your equipment and 
+other software installed on your equipment. You are also solely responsible for the protection of your equipment 
+and backup of your data, and THE PROVIDER will not be liable for any damages you may suffer in connection with using, 
+modifying, or distributing this software product.
