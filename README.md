@@ -1,19 +1,19 @@
 # LayerCakeSwap
 
-DEX protocol that consumes 7 times less gas[^1] in comparison with UniSwap, based on L2 network  :rocket:
+DEX protocol that consumes 7 times less gas<sup>1</sup> in comparison with UniSwap, based on L2 network  :rocket:
 
 ![LCSwap 004](https://user-images.githubusercontent.com/26343374/106123586-2714c680-616b-11eb-8c19-f58e01ff75bb.jpeg)
 
 This project was developed for Encode Hackathon'2021.
 
-[^1]: for swap operation. UniSwap gas consumption was measured for ETH/DAI pair.
+<sup>[1](#myfootnote1)</sup> for swap operation. UniSwap gas consumption was measured for ETH/DAI pair.
 
 ## Getting Started
 
 Ethereum contract & frontend is located at https://github.com/MikaelLazarev/layer-cake-swap-client/  
 This project contains some configuration files to help get started :hammer_and_wrench:
 
-## Solution
+## Concept
 
 ### Problem
 
@@ -31,13 +31,13 @@ This version supports business logic for a trade pair ETH - ERC20 Token.
 |------------------------------|:-----------:|:-------------:|
 | Deposit Eth                  | -           |  22,656       |
 | Deposit token                | -           |  48,628       | 
-| Swap token to Eth**           | 165,969     |  22,656       |
+| Swap token to Eth<sup>2</sup>| 165,969     |  22,656       |
 | AddToLiquidity pool          | in research |  22,656       |
 | Withdraw from liquidity pool | in research |  22,656       |
 | Withdraw ETH                 | -           |  no data yet  |
 | Withdraw token               | -           |  no data yet  |
 
-** - gas for UniSwap was measured for ETH/DAI Swap
+<sup>[2](#myfootnote1)</sup> - gas for UniSwap was measured for ETH/DAI Swap
 
 ### How it works
 
