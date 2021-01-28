@@ -27,8 +27,7 @@ This project was developed for Encode Hackathon'2021.
 | Withdraw ETH                 | -           |  no data yet  |
 | Withdraw token               | -           |  no data yet  |
 
-<sup>[1](#myfootnote1)</sup> for swap operation. UniSwap gas consumption was measured for ETH/DAI pair.
-
+<sup>[1](#myfootnote1)</sup> - for swap operation. UniSwap gas consumption was measured for ETH/DAI pair.  
 <sup>[2](#myfootnote1)</sup> - gas for UniSwap was measured for ETH/DAI Swap
 
 ## How it works
