@@ -1,6 +1,6 @@
-# PolkaSwap
+# LayerCakeSwap
 
-A new FRAME-based Substrate node, ready for hacking :rocket:
+DEX protocol that consumes 5 times less gas in comparison with UniSwap, based on L2 network  :rocket:
 
 ## Getting Started
 
@@ -14,13 +14,16 @@ be found at the
 steps to install [`rustup`](https://rustup.rs/) and configure the Rust toolchain to default to the
 latest stable version.
 
+### Configuration
+
+
 ### Makefile
 
 This project uses a [Makefile](Makefile) to document helpful commands and make it easier to execute
 them. Get started by running these [`make`](https://www.gnu.org/software/make/manual/make.html)
 targets:
 
-1. `make init` - Run the [init script](scripts/init.sh) to configure the Rust toolchain for
+1. `make dev` - Run the [init script](scripts/init.sh) to configure the Rust toolchain for
    [WebAssembly compilation](https://substrate.dev/docs/en/knowledgebase/getting-started/#webassembly-compilation).
 1. `make run` - Build and launch this project in development mode.
 
