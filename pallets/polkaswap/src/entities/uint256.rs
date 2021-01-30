@@ -8,6 +8,7 @@ use sp_std::{fmt, prelude::*};
 use sp_std::ops::{Add, Sub, Div, Mul};
 use frame_support::traits::IsType;
 use hex::encode;
+use sp_std::str::FromStr;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Default)]
 pub struct Uint256(Uint);
@@ -128,5 +129,18 @@ impl Ord for Uint256 {
 impl PartialOrd for Uint256 {
 	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
 		self.0.partial_cmp(&other.0)
+	}
+}
+
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	#[test]
+	fn encodings() {
+		let src = Uint256::from(100000000000000000000u128);
+		let enc  = src.encode();
+		let dec = Uint256(Uint::from_little_endian(enc.as_slice()));
+		assert_eq!(src, dec);
 	}
 }

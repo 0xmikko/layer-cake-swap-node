@@ -17,7 +17,7 @@ pub enum ContractMethod {
 	SwapToToken(SenderAmount),
 	SwapToETH(SenderAmount),
 	AddLiquidity(SenderAmount),
-	WithdrawLiquidity(SenderAmount),
+	RemoveLiquidity(SenderAmount),
 }
 
 impl Encode for ContractMethod {
@@ -30,7 +30,7 @@ impl Encode for ContractMethod {
 			ContractMethod::SwapToToken(sa) => { ContractMethod::encode_item(4u8, sa) }
 			ContractMethod::SwapToETH(sa) => { ContractMethod::encode_item(5u8, sa) }
 			ContractMethod::AddLiquidity(sa) => { ContractMethod::encode_item(6u8, sa) }
-			ContractMethod::WithdrawLiquidity(sa) => { ContractMethod::encode_item(7u8, sa) }
+			ContractMethod::RemoveLiquidity(sa) => { ContractMethod::encode_item(7u8, sa) }
 		}
 	}
 }
@@ -47,7 +47,7 @@ impl Decode for ContractMethod {
 			4u8 => Ok(ContractMethod::SwapToToken(sa)),
 			5u8 => Ok(ContractMethod::SwapToETH(sa)),
 			6u8 => Ok(ContractMethod::AddLiquidity(sa)),
-			7u8 => Ok(ContractMethod::WithdrawLiquidity(sa)),
+			7u8 => Ok(ContractMethod::RemoveLiquidity(sa)),
 			_ => { Err(Error::from("Unknown contract method type"))}
 		}
 	}
@@ -90,7 +90,7 @@ impl Display for ContractMethod {
 			}
 
 			ContractMethod::SwapToToken(dm) => {
-				write!(f, "[Swap to token]: from: {}, amount: {}", dm.sender, dm.amount)
+				write!(f, "[Swap to Token]: from: {}, amount: {}", dm.sender, dm.amount)
 			}
 
 			ContractMethod::SwapToETH(dm) => {
@@ -101,8 +101,8 @@ impl Display for ContractMethod {
 				write!(f, "[Add liquidity]: from: {}, amount: {}", dm.sender, dm.amount)
 			}
 
-			ContractMethod::WithdrawLiquidity(dm) => {
-				write!(f, "[Withdraw liquidity]: from: {}, amount: {}", dm.sender, dm.amount)
+			ContractMethod::RemoveLiquidity(dm) => {
+				write!(f, "[Remove liquidity]: from: {}, amount: {}", dm.sender, dm.amount)
 			}
 		}
 	}
