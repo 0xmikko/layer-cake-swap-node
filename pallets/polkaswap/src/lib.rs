@@ -328,7 +328,7 @@ decl_module! {
 				let updated_user_token_balance = amount_token_user - amount_token_to_withdraw;
 
 				PoolTokenLiquidity::set(pool_token_liquidity + amount_token_to_withdraw);
-				PoolETHLiquidity::set(pool_eth_liquidity - desired_token_amount);
+				PoolETHLiquidity::set(pool_eth_liquidity - desired_eth_amount);
 
 				TokenBalance::insert(&sa.sender, &updated_user_token_balance);
 				EthBalance::insert(&sa.sender, &updated_user_eth_balance);
