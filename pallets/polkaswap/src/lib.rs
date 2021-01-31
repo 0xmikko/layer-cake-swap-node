@@ -47,11 +47,11 @@ pub const LOCK_TIMEOUT_EXPIRATION: u64 = FETCH_TIMEOUT_PERIOD + 1000;
 pub const LOCK_BLOCK_EXPIRATION: u32 = 3; // in block number
 
 /// Vault contract address
-pub const VAULT_CONTRACT_ADDRESS: &'static str = "59b670e9fA9D0A427751Af201D676719a970857b";
+pub const VAULT_CONTRACT_ADDRESS: &'static str = "aC2CEB0C1AFd2e6674c5C016e13C02B1599daF5E";
 
 /// Token contract agaist Eth erc20 contract address
 /// DAI on our case
-pub const TOKEN_CONTRACT_ADDRESS: &'static str = "c6e7DF5E7b4f2A278906862b61205850344D4e7d";
+pub const TOKEN_CONTRACT_ADDRESS: &'static str = "07865c6e87b9f70255377e024ace6630c1eaa37f";
 
 /// Initial ratio for token to ETH
 /// Used at first withdraw
