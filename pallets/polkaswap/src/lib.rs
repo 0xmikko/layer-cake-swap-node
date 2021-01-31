@@ -47,11 +47,13 @@ pub const LOCK_TIMEOUT_EXPIRATION: u64 = FETCH_TIMEOUT_PERIOD + 1000;
 pub const LOCK_BLOCK_EXPIRATION: u32 = 3; // in block number
 
 /// Vault contract address
-pub const VAULT_CONTRACT_ADDRESS: &'static str = "aC2CEB0C1AFd2e6674c5C016e13C02B1599daF5E";
+pub const VAULT_CONTRACT_ADDRESS: &'static str = "138DbEB43704dBC1EB8BF3108191480488fcD6Be";
 
 /// Token contract agaist Eth erc20 contract address
 /// DAI on our case
-pub const TOKEN_CONTRACT_ADDRESS: &'static str = "07865c6e87b9f70255377e024ace6630c1eaa37f";
+pub const TOKEN_CONTRACT_ADDRESS: &'static str = "ad6d458402f60fd3bd25163575031acdce07538d";
+
+pub const TOKEN_DECIMALS :u32 = 6;
 
 /// Initial ratio for token to ETH
 /// Used at first withdraw
@@ -342,16 +344,25 @@ decl_module! {
 			fn add_liquidity(sa: SenderAmount) -> Result<ContractEvent, ContractError>{
 
 				debug::info!("add_liquidity");
-				let total_supply = TotalSupply::get();
+				debug::info!("Got eth amount: {:}", &sa.amount);
 
+				let total_supply = TotalSupply::get();
 				debug::info!("total_supply: {:}", &total_supply);
+
 				let mut amount_eth = get_min_user_eth_balance(&sa);
+				debug::info!("amount eth: {:}", &amount_eth);
+
 				let amount_token = amount_eth * get_ratio();
+				debug::info!("amount token: {:}", &amount_token);
+
 				let user_token_balance = TokenBalance::get(&sa.sender);
 				let amount_token_upd = cmp::min(amount_token, user_token_balance);
 
 				if amount_token_upd < amount_token {
+					debug::info!("EBAT, IF");
 					amount_eth = amount_token_upd / get_ratio();
+					debug::info!("amount_eth: {:?}", amount_eth);
+					debug::info!("amount_token_upd: {:?}", amount_token);
 				}
 				let amount_token = amount_token_upd;
 
