@@ -17,6 +17,9 @@ data storage on L2 network.
 
 This version implements business logic for trading a pair ETH - ERC20 Token. Ethereum contract & frontend is located at https://github.com/MikaelLazarev/layer-cake-swap-client/
 
+Demo video: [https://youtu.be/4ittQwgjaEQ](https://youtu.be/4ittQwgjaEQ)  
+Live demo: [https://lcswap.dltxperts.com](https://lcswap.dltxperts.com)
+
 This project was developed for Encode Hackathon'2021. 
 
 ### Gas consumption comparison
@@ -110,7 +113,8 @@ pub const TOKEN_CONTRACT_ADDRESS: &'static str = "5FbDB2315678afecb367f032d93F64
 ## Contributing
 When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
 
-
+## Credits
+Thanks Anthony Beaumont for inspiration and Dan Forbes for tech support & naming idea. 
 
 ## Disclaimer
 
